@@ -5,6 +5,7 @@ import '../../constants/colors.dart';
 import '../../constants/strings.dart';
 import '../../providers/app_state.dart';
 import '../../widgets/bottom_navigation.dart';
+import '../../widgets/custom_card.dart';
 import 'profile_card.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class MoreScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-                color: white,
+                color: AppColors.white,
                 child: const Text(
                   'More',
                   style: TextStyle(
@@ -42,7 +43,7 @@ class MoreScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: grey500,
+                            color: AppColors.grey500,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -51,22 +52,22 @@ class MoreScreen extends StatelessWidget {
                             children: [
                               _buildMenuItem(
                                 icon: Icons.person,
-                                iconColor: primaryBlue,
-                                bgColor: blue100,
+                                iconColor: AppColors.primaryBlue,
+                                bgColor: AppColors.blue100,
                                 title: 'Staff Management',
                               ),
                               const Divider(height: 1),
                               _buildMenuItem(
                                 icon: Icons.bar_chart,
-                                iconColor: purple600,
-                                bgColor: purple100,
+                                iconColor: AppColors.purple600,
+                                bgColor: AppColors.purple100,
                                 title: 'Reports',
                               ),
                               const Divider(height: 1),
                               _buildMenuItem(
                                 icon: Icons.description,
-                                iconColor: amber500,
-                                bgColor: amber100,
+                                iconColor: AppColors.amber500,
+                                bgColor: AppColors.amber100,
                                 title: 'Documents',
                               ),
                             ],
@@ -78,7 +79,7 @@ class MoreScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: grey500,
+                            color: AppColors.grey500,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -87,28 +88,28 @@ class MoreScreen extends StatelessWidget {
                             children: [
                               _buildMenuItem(
                                 icon: Icons.notifications,
-                                iconColor: secondaryTeal,
-                                bgColor: green100,
+                                iconColor: AppColors.secondaryTeal,
+                                bgColor: AppColors.green100,
                                 title: 'Notifications',
                               ),
                               const Divider(height: 1),
                               _buildMenuItem(
                                 icon: Icons.email,
-                                iconColor: primaryBlue,
-                                bgColor: blue100,
+                                iconColor: AppColors.primaryBlue,
+                                bgColor: AppColors.blue100,
                                 title: 'Messages',
                                 badge: Container(
                                   width: 20,
                                   height: 20,
                                   decoration: BoxDecoration(
-                                    color: red500,
+                                    color: AppColors.red500,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Center(
                                     child: Text(
                                       '3',
                                       style: TextStyle(
-                                        color: white,
+                                        color: AppColors.white,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -124,7 +125,7 @@ class MoreScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: grey500,
+                            color: AppColors.grey500,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -133,8 +134,8 @@ class MoreScreen extends StatelessWidget {
                             children: [
                               _buildMenuItem(
                                 icon: Icons.settings,
-                                iconColor: grey600,
-                                bgColor: grey100,
+                                iconColor: AppColors.grey600,
+                                bgColor: AppColors.grey100,
                                 title: 'Settings',
                               ),
                               const Divider(height: 1),
@@ -149,12 +150,12 @@ class MoreScreen extends StatelessWidget {
                                           width: 32,
                                           height: 32,
                                           decoration: BoxDecoration(
-                                            color: grey100,
+                                            color: AppColors.grey100,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Icon(
                                             Icons.dark_mode,
-                                            color: grey600,
+                                            color: AppColors.grey600,
                                           ),
                                         ),
                                         const SizedBox(width: 12),
@@ -167,7 +168,7 @@ class MoreScreen extends StatelessWidget {
                                     Switch(
                                       value: false,
                                       onChanged: (value) {},
-                                      activeColor: primaryBlue,
+                                      activeColor: AppColors.primaryBlue,
                                     ),
                                   ],
                                 ),
@@ -175,17 +176,17 @@ class MoreScreen extends StatelessWidget {
                               const Divider(height: 1),
                               _buildMenuItem(
                                 icon: Icons.help_outline,
-                                iconColor: primaryBlue,
-                                bgColor: blue100,
+                                iconColor: AppColors.primaryBlue,
+                                bgColor: AppColors.blue100,
                                 title: 'Help & Support',
                               ),
                               const Divider(height: 1),
                               _buildMenuItem(
                                 icon: Icons.logout,
-                                iconColor: red600,
-                                bgColor: red100,
+                                iconColor: AppColors.red600,
+                                bgColor: AppColors.red100,
                                 title: 'Logout',
-                                textColor: red600,
+                                textColor: AppColors.red600,
                               ),
                             ],
                           ),
@@ -198,7 +199,7 @@ class MoreScreen extends StatelessWidget {
                                 Strings.appVersion,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: grey500,
+                                  color: AppColors.grey500,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -206,7 +207,7 @@ class MoreScreen extends StatelessWidget {
                                 '© 2025 PropertyPro. All rights reserved.',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: grey400,
+                                  color: AppColors.grey400,
                                 ),
                               ),
                             ],

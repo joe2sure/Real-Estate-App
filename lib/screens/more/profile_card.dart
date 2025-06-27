@@ -38,14 +38,14 @@ class ProfileCard extends StatelessWidget {
                         'Property Manager',
                         style: TextStyle(
                           fontSize: 14,
-                          color: grey500,
+                          color: AppColors.grey500,
                         ),
                       ),
                       Text(
                         'jdavidson@propertypro.com',
                         style: TextStyle(
                           fontSize: 14,
-                          color: grey500,
+                          color: AppColors.grey500,
                         ),
                       ),
                     ],

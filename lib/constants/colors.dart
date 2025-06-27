@@ -9,10 +9,12 @@ class AppColors  {
   static const Color grey100 = Color(0xFFE5E5E5);
   static const Color grey200 = Color(0xFFD1D1D1);
   static const Color grey300 = Color(0xFFBCBBBB);
+  static const Color grey400 = Color(0xFF9CA3AF); // Added grey400
   static const Color grey500 = Color(0xFF6B7280);
   static const Color grey600 = Color(0xFF4B5563);
   static const Color grey800 = Color(0xFF1F2A44);
   static const Color red500 = Color(0xFFEF4444);
+  static const Color red600 = Color(0xFFDC2626); // Added red600
   static const Color green100 = Color(0xFFD1FAE5);
   static const Color green500 = Color(0xFF10B981);
   static const Color amber100 = Color(0xFFFFF7ED);

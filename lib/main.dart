@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PropertyPro',
+      title: 'Peeman',
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),
         colorScheme: ColorScheme.fromSeed(

@@ -24,7 +24,7 @@ class LoginForm extends StatelessWidget {
               hintText: 'Enter your email',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: grey200),
+                borderSide: BorderSide(color: AppColors.grey200),
               ),
             ),
           ),
@@ -40,7 +40,7 @@ class LoginForm extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   'Forgot?',
-                  style: TextStyle(color: primaryBlue),
+                  style: TextStyle(color: AppColors.primaryBlue),
                 ),
               ),
             ],
@@ -51,7 +51,7 @@ class LoginForm extends StatelessWidget {
               hintText: 'Enter your password',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: grey200),
+                borderSide: BorderSide(color: AppColors.grey200),
               ),
             ),
           ),
@@ -61,7 +61,7 @@ class LoginForm extends StatelessWidget {
               Checkbox(value: false, onChanged: (value) {}),
               Text(
                 'Remember me',
-                style: TextStyle(color: grey600, fontSize: 14),
+                style: TextStyle(color: AppColors.grey600, fontSize: 14),
               ),
             ],
           ),
@@ -74,12 +74,12 @@ class LoginForm extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: Divider(color: grey300)),
+              Expanded(child: Divider(color: AppColors.grey300)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text('or continue with', style: TextStyle(color: grey500, fontSize: 12)),
+                child: Text('or continue with', style: TextStyle(color: AppColors.grey500, fontSize: 12)),
               ),
-              Expanded(child: Divider(color: grey300)),
+              Expanded(child: Divider(color: AppColors.grey300)),
             ],
           ),
           const SizedBox(height: 16),

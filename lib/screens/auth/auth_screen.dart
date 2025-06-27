@@ -32,9 +32,9 @@ class AuthScreen extends StatelessWidget {
                     Tab(text: 'Login'),
                     Tab(text: 'Register'),
                   ],
-                  labelColor: primaryBlue,
-                  unselectedLabelColor: grey600,
-                  indicatorColor: primaryBlue,
+                  labelColor: AppColors.primaryBlue,
+                  unselectedLabelColor: AppColors.grey600,
+                  indicatorColor: AppColors.primaryBlue,
                   onTap: (index) {
                     appState.setAuthTab(index == 0 ? 'login' : 'register');
                   },

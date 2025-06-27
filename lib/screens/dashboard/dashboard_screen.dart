@@ -1,3 +1,4 @@
+import 'package:Peeman/screens/dashboard/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/assets.dart';
@@ -6,7 +7,7 @@ import '../../providers/app_state.dart';
 import '../../widgets/bottom_navigation.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/fab.dart';
-import 'stats_card.dart';
+// import 'stats_card.dart';
 import 'revenue_chart.dart';
 import 'due_rent_card.dart';
 import 'recent_activity_card.dart';
@@ -23,7 +24,7 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-                color: white,
+                color: AppColors.white,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -39,7 +40,7 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Text(
                               'Welcome back,',
-                              style: TextStyle(color: grey600, fontSize: 14),
+                              style: TextStyle(color: AppColors.grey600, fontSize: 14),
                             ),
                             const Text(
                               'James Davidson',
@@ -56,7 +57,7 @@ class DashboardScreen extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.notifications),
-                          color: grey600,
+                          color: AppColors.grey600,
                           onPressed: () {},
                         ),
                         Positioned(
@@ -66,7 +67,7 @@ class DashboardScreen extends StatelessWidget {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: red500,
+                              color: AppColors.red500,
                               shape: BoxShape.circle,
                             ),
                           ),

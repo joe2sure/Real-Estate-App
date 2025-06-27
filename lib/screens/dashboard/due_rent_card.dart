@@ -17,8 +17,8 @@ class DueRentCard extends StatelessWidget {
         'amount': 1250.0,
         'status': 'Due in 2 days',
         'image': Assets.tenant1,
-        'badgeColor': amber100,
-        'textColor': amber500,
+        'badgeColor': AppColors.amber100,
+        'textColor': AppColors.amber500,
       },
       {
         'name': 'Robert Johnson',
@@ -26,8 +26,8 @@ class DueRentCard extends StatelessWidget {
         'amount': 950.0,
         'status': '3 days overdue',
         'image': Assets.tenant2,
-        'badgeColor': red100,
-        'textColor': red500,
+        'badgeColor': AppColors.red100,
+        'textColor': AppColors.red500,
       },
       {
         'name': 'Daniel Thompson',
@@ -35,8 +35,8 @@ class DueRentCard extends StatelessWidget {
         'amount': 1450.0,
         'status': 'Due tomorrow',
         'image': Assets.tenant3,
-        'badgeColor': amber100,
-        'textColor': amber500,
+        'badgeColor': AppColors.amber100,
+        'textColor': AppColors.amber500,
       },
     ];
 
@@ -57,7 +57,7 @@ class DueRentCard extends StatelessWidget {
               onPressed: () {},
               child: Text(
                 'View All',
-                style: TextStyle(color: primaryBlue),
+                style: TextStyle(color: AppColors.primaryBlue),
               ),
             ),
           ],
@@ -97,7 +97,7 @@ class DueRentCard extends StatelessWidget {
                                   rent['unit'] as String,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: grey500,
+                                    color: AppColors.grey500,
                                   ),
                                 ),
                               ],

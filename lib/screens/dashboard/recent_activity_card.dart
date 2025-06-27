@@ -10,24 +10,24 @@ class RecentActivityCard extends StatelessWidget {
     final activities = [
       {
         'icon': Icons.attach_money,
-        'iconColor': primaryBlue,
-        'bgColor': blue100,
+        'iconColor': AppColors.primaryBlue,
+        'bgColor': AppColors.blue100,
         'title': 'Payment Received',
         'subtitle': '\$1,350 from Sarah Williams',
         'time': '2h ago',
       },
       {
         'icon': Icons.person_add,
-        'iconColor': secondaryTeal,
-        'bgColor': green100,
+        'iconColor': AppColors.secondaryTeal,
+        'bgColor': AppColors.green100,
         'title': 'New Tenant',
         'subtitle': 'Michael Chen signed lease for Unit 4A',
         'time': 'Yesterday',
       },
       {
         'icon': Icons.build,
-        'iconColor': amber500,
-        'bgColor': amber100,
+        'iconColor': AppColors.amber500,
+        'bgColor': AppColors.amber100,
         'title': 'Maintenance Request',
         'subtitle': 'Plumbing issue in Unit 2B',
         'time': '2d ago',
@@ -55,7 +55,7 @@ class RecentActivityCard extends StatelessWidget {
                     onPressed: () {},
                     child: Text(
                       'View All',
-                      style: TextStyle(color: primaryBlue),
+                      style: TextStyle(color: AppColors.primaryBlue),
                     ),
                   ),
                 ],
@@ -98,7 +98,7 @@ class RecentActivityCard extends StatelessWidget {
                                 activity['subtitle'] as String,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: grey500,
+                                  color: AppColors.grey500,
                                 ),
                               ),
                             ],
@@ -108,7 +108,7 @@ class RecentActivityCard extends StatelessWidget {
                           activity['time'] as String,
                           style: TextStyle(
                             fontSize: 12,
-                            color: grey500,
+                            color: AppColors.grey500,
                           ),
                         ),
                       ],

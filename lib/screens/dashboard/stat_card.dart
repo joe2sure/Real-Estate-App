@@ -10,29 +10,29 @@ class StatsCard extends StatelessWidget {
     final stats = [
       {
         'icon': Icons.apartment,
-        'color': blue100,
-        'iconColor': primaryBlue,
+        'color': AppColors.blue100,
+        'iconColor': AppColors.primaryBlue,
         'title': 'Properties',
         'value': '12',
       },
       {
         'icon': Icons.people,
-        'color': green100,
-        'iconColor': secondaryTeal,
+        'color': AppColors.green100,
+        'iconColor': AppColors.secondaryTeal,
         'title': 'Tenants',
         'value': '48',
       },
       {
         'icon': Icons.attach_money,
-        'color': purple100,
-        'iconColor': purple600,
+        'color': AppColors.purple100,
+        'iconColor': AppColors.purple600,
         'title': 'Revenue',
         'value': '\$25.6K',
       },
       {
         'icon': Icons.pending_actions,
-        'color': amber100,
-        'iconColor': amber500,
+        'color': AppColors.amber100,
+        'iconColor': AppColors.amber500,
         'title': 'Pending',
         'value': '5',
       },
@@ -68,7 +68,7 @@ class StatsCard extends StatelessWidget {
                   children: [
                     Text(
                       stat['title'] as String,
-                      style: TextStyle(color: grey500, fontSize: 14),
+                      style: TextStyle(color: AppColors.grey500, fontSize: 14),
                     ),
                     Text(
                       stat['value'] as String,

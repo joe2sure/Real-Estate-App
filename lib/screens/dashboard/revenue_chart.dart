@@ -28,7 +28,7 @@ class RevenueChart extends StatelessWidget {
                   onPressed: () {},
                   child: Text(
                     'View All',
-                    style: TextStyle(color: primaryBlue),
+                    style: TextStyle(color: AppColors.primaryBlue),
                   ),
                 ),
               ],
@@ -44,7 +44,7 @@ class RevenueChart extends StatelessWidget {
                     horizontalInterval: 5000,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: grey200,
+                        color: AppColors.grey200,
                         strokeWidth: 1,
                       );
                     },
@@ -57,7 +57,7 @@ class RevenueChart extends StatelessWidget {
                         getTitlesWidget: (value, meta) {
                           return Text(
                             '\$${value.toInt()}',
-                            style: TextStyle(color: grey600, fontSize: 12),
+                            style: TextStyle(color: AppColors.grey600, fontSize: 12),
                           );
                         },
                       ),
@@ -69,7 +69,7 @@ class RevenueChart extends StatelessWidget {
                           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
                           return Text(
                             months[value.toInt()],
-                            style: TextStyle(color: grey600, fontSize: 12),
+                            style: TextStyle(color: AppColors.grey600, fontSize: 12),
                           );
                         },
                       ),
@@ -89,24 +89,24 @@ class RevenueChart extends StatelessWidget {
                         FlSpot(5, 25600),
                       ],
                       isCurved: true,
-                      color: primaryBlue,
+                      color: AppColors.primaryBlue,
                       gradient: LinearGradient(
-                        colors: [primaryBlue, secondaryTeal],
+                        colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
                       ),
                       barWidth: 3,
                       dotData: FlDotData(
                         show: true,
                         getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
                           radius: 4,
-                          color: primaryBlue,
+                          color: AppColors.primaryBlue,
                         ),
                       ),
                       belowBarData: BarAreaData(
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            primaryBlue.withOpacity(0.2),
-                            secondaryTeal.withOpacity(0.1),
+                            AppColors.primaryBlue.withOpacity(0.2),
+                            AppColors.secondaryTeal.withOpacity(0.1),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,

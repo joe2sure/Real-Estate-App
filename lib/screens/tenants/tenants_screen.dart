@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
+// import '../../providers/app_state.dart';
 import '../../constants/colors.dart';
-import '../../providers/app_state.dart';
 import '../../widgets/bottom_navigation.dart';
 import '../../widgets/fab.dart';
 import 'tenant_card.dart';

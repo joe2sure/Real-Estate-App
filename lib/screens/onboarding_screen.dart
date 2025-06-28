@@ -56,7 +56,7 @@ class OnboardingScreen extends StatelessWidget {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.network(
+                        Image.asset(
                           data.image,
                           width: 256,
                           height: 256,

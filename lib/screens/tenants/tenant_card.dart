@@ -82,15 +82,15 @@ class TenantCard extends StatelessWidget {
                                 CustomBadge(
                                   text: tenant.status,
                                   backgroundColor: tenant.status == 'Paid'
-                                      ? green100
+                                      ? AppColors.green100
                                       : tenant.status == 'Overdue'
-                                          ? red100
-                                          : amber100,
+                                          ? AppColors.red100
+                                          : AppColors.amber100,
                                   textColor: tenant.status == 'Paid'
-                                      ? green500
+                                      ? AppColors.amber500
                                       : tenant.status == 'Overdue'
-                                          ? red500
-                                          : amber500,
+                                          ? AppColors.red500
+                                          : AppColors.amber500,
                                 ),
                               ],
                             ),
@@ -98,7 +98,7 @@ class TenantCard extends StatelessWidget {
                               tenant.unit,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: grey500,
+                                color: AppColors.grey500,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -107,14 +107,14 @@ class TenantCard extends StatelessWidget {
                                 Icon(
                                   Icons.phone,
                                   size: 14,
-                                  color: grey500,
+                                  color: AppColors.grey500,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   tenant.phone,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: grey500,
+                                    color: AppColors.grey500,
                                   ),
                                 ),
                               ],

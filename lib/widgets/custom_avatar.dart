@@ -18,12 +18,12 @@ class CustomAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: size / 2,
       backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) : null,
-      backgroundColor: grey100,
+      backgroundColor: AppColors.grey100,
       child: imageUrl == null
           ? Text(
               fallbackText,
               style: TextStyle(
-                color: grey600,
+                color: AppColors.grey600,
                 fontSize: size / 2.5,
                 fontWeight: FontWeight.w600,
               ),

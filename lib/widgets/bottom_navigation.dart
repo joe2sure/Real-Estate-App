@@ -23,15 +23,15 @@ class BottomNavigation extends StatelessWidget {
                 icon: Icon(
                   item['icon'] as IconData,
                   color: appState.activeTab == item['tab']
-                      ? primaryBlue
-                      : grey500,
+                      ? AppColors.primaryBlue
+                      : AppColors.grey500,
                 ),
                 label: item['label'] as String,
               ))
           .toList(),
       currentIndex: items.indexWhere((item) => item['tab'] == appState.activeTab),
-      selectedItemColor: primaryBlue,
-      unselectedItemColor: grey500,
+      selectedItemColor: AppColors.primaryBlue,
+      unselectedItemColor: AppColors.grey500,
       showUnselectedLabels: true,
       type: BottomNavigationBarType.fixed,
       onTap: (index) {

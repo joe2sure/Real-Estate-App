@@ -13,14 +13,14 @@ class FloatingActionButtonWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [primaryBlue, secondaryTeal],
+            colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           shape: BoxShape.circle,
         ),
         child: const Center(
-          child: Icon(Icons.add, color: white, size: 24),
+          child: Icon(Icons.add, color: AppColors.white, size: 24),
         ),
       ),
     );

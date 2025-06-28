@@ -22,17 +22,17 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        foregroundColor: isOutline ? Colors.grey600 : Colors.white,
+        foregroundColor: isOutline ? AppColors.grey600 : Colors.white,
         backgroundColor: isGradient
             ? null
             : isOutline
                 ? Colors.white
-                : primaryBlue,
+                : AppColors.primaryBlue,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: isOutline
-              ? BorderSide(color: grey200)
+              ? BorderSide(color: AppColors.grey200)
               : BorderSide.none,
         ),
         elevation: isOutline ? 0 : 2,
@@ -46,7 +46,7 @@ class CustomButton extends StatelessWidget {
         decoration: isGradient
             ? BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [primaryBlue, secondaryTeal],
+                  colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -67,7 +67,7 @@ class CustomButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: isOutline ? grey800 : white,
+                  color: isOutline ? AppColors.grey800 : AppColors.white,
                 ),
               ),
             ],

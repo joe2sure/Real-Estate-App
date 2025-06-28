@@ -52,7 +52,7 @@ class RecentPaymentCard extends StatelessWidget {
                     onPressed: () {},
                     child: Text(
                       'View All',
-                      style: TextStyle(color: primaryBlue),
+                      style: TextStyle(color: AppColors.primaryBlue),
                     ),
                   ),
                 ],
@@ -90,7 +90,7 @@ class RecentPaymentCard extends StatelessWidget {
                                     payment.date,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: grey500,
+                                      color: AppColors.grey500,
                                     ),
                                   ),
                                 ],

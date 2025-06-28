@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
-import '../../providers/app_state.dart';
+// import 'package:provider/provider.dart';
+// import '../../providers/app_state.dart';
 import '../../widgets/bottom_navigation.dart';
 import '../../widgets/fab.dart';
-import 'payment_summary_card.dart';
+// import 'payment_summary_card.dart';
 import 'recent_payment_card.dart';
 import 'record_payment_form.dart';
 
@@ -20,7 +20,7 @@ class PaymentsScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-                color: white,
+                color: AppColors.white,
                 child: const Text(
                   'Payments',
                   style: TextStyle(

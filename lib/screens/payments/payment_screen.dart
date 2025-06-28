@@ -4,7 +4,7 @@ import '../../constants/colors.dart';
 // import '../../providers/app_state.dart';
 import '../../widgets/bottom_navigation.dart';
 import '../../widgets/fab.dart';
-// import 'payment_summary_card.dart';
+import 'payment_summary_card.dart';
 import 'recent_payment_card.dart';
 import 'record_payment_form.dart';
 

@@ -26,7 +26,7 @@ class RecordPaymentForm extends StatelessWidget {
               'Enter payment details below',
               style: TextStyle(
                 fontSize: 14,
-                color: grey600,
+                color: AppColors.grey600,
               ),
             ),
             const SizedBox(height: 16),
@@ -38,10 +38,10 @@ class RecordPaymentForm extends StatelessWidget {
             TextFormField(
               decoration: InputDecoration(
                 hintText: 'Select tenant',
-                suffixIcon: const Icon(Icons.arrow_drop_down, color: grey400),
+                suffixIcon: const Icon(Icons.arrow_drop_down, color: AppColors.grey400),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: grey200),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
               ),
             ),
@@ -54,10 +54,10 @@ class RecordPaymentForm extends StatelessWidget {
             TextFormField(
               decoration: InputDecoration(
                 hintText: '0.00',
-                prefixIcon: const Icon(Icons.attach_money, color: grey400),
+                prefixIcon: const Icon(Icons.attach_money, color: AppColors.grey400),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: grey200),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
               ),
             ),
@@ -72,7 +72,7 @@ class RecordPaymentForm extends StatelessWidget {
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: grey200),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
               ),
             ),
@@ -85,10 +85,10 @@ class RecordPaymentForm extends StatelessWidget {
             TextFormField(
               decoration: InputDecoration(
                 hintText: 'Select payment method',
-                suffixIcon: const Icon(Icons.arrow_drop_down, color: grey400),
+                suffixIcon: const Icon(Icons.arrow_drop_down, color: AppColors.grey400),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: grey200),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
               ),
             ),
@@ -103,7 +103,7 @@ class RecordPaymentForm extends StatelessWidget {
                 hintText: 'Add any additional notes',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: grey200),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
               ),
             ),

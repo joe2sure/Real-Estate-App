@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [primaryBlue, secondaryTeal],
+            colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: white,
+                      color: AppColors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -58,12 +58,12 @@ class _SplashScreenState extends State<SplashScreen> {
                     Strings.tagline,
                     style: const TextStyle(
                       fontSize: 18,
-                      color: white,
+                      color: AppColors.white,
                     ),
                   ),
                   const SizedBox(height: 32),
                   const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(white),
+                    valueColor: AlwaysStoppedAnimation(AppColors.white),
                     strokeWidth: 4,
                   ),
                 ],
@@ -78,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 12,
-                  color: white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w400,
                 ),
               ),

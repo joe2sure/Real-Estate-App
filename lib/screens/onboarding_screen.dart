@@ -8,9 +8,9 @@ import '../providers/app_state.dart';
 import '../widgets/custom_button.dart';
 
 class OnboardingScreen extends StatelessWidget {
-  const OnboardingScreen({super.key});
+   OnboardingScreen({super.key});
 
-  final List<OnboardingData> onboardingData = const [
+  final List<OnboardingData> onboardingData = [
     OnboardingData(
       title: 'Track Your Properties',
       description:
@@ -67,7 +67,7 @@ class OnboardingScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: grey800,
+                            color: AppColors.grey800,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -78,7 +78,7 @@ class OnboardingScreen extends StatelessWidget {
                             data.description,
                             style: TextStyle(
                               fontSize: 16,
-                              color: grey600,
+                              color: AppColors.grey600,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -100,7 +100,7 @@ class OnboardingScreen extends StatelessWidget {
                       height: 10,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: currentStep == index ? primaryBlue : grey300,
+                        color: currentStep == index ? AppColors.primaryBlue : AppColors.grey300,
                       ),
                     ),
                   ),

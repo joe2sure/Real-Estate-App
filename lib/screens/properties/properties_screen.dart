@@ -18,7 +18,7 @@ class PropertiesScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-                color: white,
+                color: AppColors.white,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -36,23 +36,23 @@ class PropertiesScreen extends StatelessWidget {
                           child: TextFormField(
                             decoration: InputDecoration(
                               hintText: 'Search properties...',
-                              prefixIcon: const Icon(Icons.search, color: grey400),
+                              prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
-                              fillColor: grey100,
+                              fillColor: AppColors.grey100,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.filter_list, color: grey600),
+                          icon: const Icon(Icons.filter_list, color: AppColors.grey600),
                           onPressed: () {},
                         ),
                         IconButton(
-                          icon: const Icon(Icons.sort, color: grey600),
+                          icon: const Icon(Icons.sort, color: AppColors.grey600),
                           onPressed: () {},
                         ),
                       ],

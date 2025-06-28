@@ -67,8 +67,8 @@ class PropertyCard extends StatelessWidget {
                           right: 12,
                           child: CustomBadge(
                             text: property.status,
-                            backgroundColor: property.status == 'Active' ? green500 : amber500,
-                            textColor: white,
+                            backgroundColor: property.status == 'Active' ? AppColors.green500 : AppColors.amber500,
+                            textColor: AppColors.white,
                           ),
                         ),
                       ],
@@ -90,7 +90,7 @@ class PropertyCard extends StatelessWidget {
                             property.address,
                             style: TextStyle(
                               fontSize: 14,
-                              color: grey500,
+                              color: AppColors.grey500,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -104,7 +104,7 @@ class PropertyCard extends StatelessWidget {
                                     'Units',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: grey500,
+                                      color: AppColors.grey500,
                                     ),
                                   ),
                                   Text(
@@ -123,7 +123,7 @@ class PropertyCard extends StatelessWidget {
                                     'Occupancy',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: grey500,
+                                      color: AppColors.grey500,
                                     ),
                                   ),
                                   Text(
@@ -142,7 +142,7 @@ class PropertyCard extends StatelessWidget {
                                     'Monthly Income',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: grey500,
+                                      color: AppColors.grey500,
                                     ),
                                   ),
                                   Text(

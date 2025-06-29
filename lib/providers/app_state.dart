@@ -14,9 +14,7 @@ class AppState extends ChangeNotifier {
   void setActiveTab(String tab, {BuildContext? context}) {
     _activeTab = tab;
     notifyListeners();
-    if (context != null && tab.isNotEmpty) {
-      Navigator.of(context).pushReplacementNamed('/$tab');
-    }
+    // Navigation is now handled in MainScreen, so context is not needed here
   }
 
   void setOnboardingStep(int step) {
@@ -41,13 +39,15 @@ class AppState extends ChangeNotifier {
 // import 'package:flutter/material.dart';
 
 // class AppState extends ChangeNotifier {
-//   String _activeTab = '';
-//   int _onboardingStep = -2; // Default to -2 to indicate splash screen
+//   String _activeTab = 'dashboard'; // Default to 'dashboard'
+//   int _onboardingStep = -2;
 //   String _authTab = 'login';
+//   bool _autoLogin = true;
 
 //   String get activeTab => _activeTab;
 //   int get onboardingStep => _onboardingStep;
 //   String get authTab => _authTab;
+//   bool get autoLogin => _autoLogin;
 
 //   void setActiveTab(String tab, {BuildContext? context}) {
 //     _activeTab = tab;
@@ -64,6 +64,11 @@ class AppState extends ChangeNotifier {
 
 //   void setAuthTab(String tab) {
 //     _authTab = tab;
+//     notifyListeners();
+//   }
+
+//   void toggleAutoLogin(bool value) {
+//     _autoLogin = value;
 //     notifyListeners();
 //   }
 // }

@@ -204,7 +204,7 @@ class MoreScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '© 2025 PropertyPro. All rights reserved.',
+                                '© 2025 Peeman Property. All rights reserved.',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: AppColors.grey400,
@@ -220,7 +220,7 @@ class MoreScreen extends StatelessWidget {
               ),
             ],
           ),
-          const BottomNavigation(),
+          // const BottomNavigation(),
         ],
       ),
     );

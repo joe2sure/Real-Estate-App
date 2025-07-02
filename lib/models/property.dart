@@ -18,4 +18,27 @@ class Property {
     required this.occupancy,
     required this.monthlyIncome,
   });
+
+  // Optional: Add copyWith method for immutability
+  Property copyWith({
+    String? name,
+    String? address,
+    String? image,
+    String? status,
+    int? unitsOccupied,
+    int? totalUnits,
+    double? occupancy,
+    double? monthlyIncome,
+  }) {
+    return Property(
+      name: name ?? this.name,
+      address: address ?? this.address,
+      image: image ?? this.image,
+      status: status ?? this.status,
+      unitsOccupied: unitsOccupied ?? this.unitsOccupied,
+      totalUnits: totalUnits ?? this.totalUnits,
+      occupancy: occupancy ?? this.occupancy,
+      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
+    );
+  }
 }

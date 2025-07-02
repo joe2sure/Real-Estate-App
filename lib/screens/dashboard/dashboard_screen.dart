@@ -1,3 +1,4 @@
+import 'package:Peeman/screens/dashboard/notification_screen.dart';
 import 'package:Peeman/screens/dashboard/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +59,13 @@ class DashboardScreen extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.notifications),
                           color: AppColors.grey600,
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationScreen(),
+                              ),
+                            );
+                          },
                         ),
                         Positioned(
                           top: 8,

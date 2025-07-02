@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'PeemanProperty',
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),

@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PropertyPro',
+      title: 'PeemanProperty',
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),
         colorScheme: ColorScheme.fromSeed(
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           secondary: const Color(0xFF059669),
         ),
         scaffoldBackgroundColor: const Color(0xFFF7F7F7),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),

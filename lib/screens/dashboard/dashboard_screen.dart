@@ -97,11 +97,11 @@ class DashboardScreen extends StatelessWidget {
               ),
             ],
           ),
-          const Positioned(
-            bottom: 80,
-            right: 16,
-            child: FloatingActionButtonWidget(),
-          ),
+          // const Positioned(
+          //   bottom: 80,
+          //   right: 16,
+          //   child: FloatingActionButtonWidget(),
+          // ),
         ],
       ),
       // bottomNavigationBar: const BottomNavigation(),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
-import '../../models/payment.dart';
+import '../../models/payment_model.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_card.dart';
 

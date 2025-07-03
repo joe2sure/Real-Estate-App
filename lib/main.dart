@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PropertyPro',
+      title: 'Peeman Property',
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),
         colorScheme: ColorScheme.fromSeed(
@@ -65,7 +65,7 @@ class MainScreen extends StatelessWidget {
       case 'more':
         return const MoreScreen();
       default:
-        return const DashboardScreen(); // Fallback to dashboard
+        return const DashboardScreen();
     }
   }
 

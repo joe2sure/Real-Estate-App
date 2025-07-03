@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
-import '../../models/property.dart';
+import '../../models/property_model.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 

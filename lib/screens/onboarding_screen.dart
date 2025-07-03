@@ -3,7 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 import '../constants/assets.dart';
 import '../constants/colors.dart';
-import '../models/onboarding_data.dart';
+import '../models/onboarding_data_model.dart';
 import '../providers/app_state.dart';
 import '../widgets/custom_button.dart';
 import 'auth/auth_screen.dart';

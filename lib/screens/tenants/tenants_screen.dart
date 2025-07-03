@@ -1,20 +1,49 @@
+import 'package:Peeman/screens/properties/properties_screen.dart';
+import 'package:Peeman/screens/tenants/addtenantform';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import '../../providers/app_state.dart';
+import '../../models/tenant.dart';
 import '../../constants/colors.dart';
-import '../../widgets/bottom_navigation.dart';
-import '../../widgets/fab.dart';
+import '../../constants/assets.dart';
 import 'tenant_card.dart';
 
-class TenantsScreen extends StatelessWidget {
+class TenantsScreen extends StatefulWidget {
   const TenantsScreen({super.key});
+
+  @override
+  State<TenantsScreen> createState() => _TenantsScreenState();
+}
+
+class _TenantsScreenState extends State<TenantsScreen> {
+  final List<Tenant> _tenants = [
+    Tenant(
+      name: 'Emma Mitchell',
+      unit: 'Unit 3A, Parkview Apartments',
+      image: Assets.tenant1,
+      status: 'Paid',
+      phone: '+1 (555) 123-4567',
+    ),
+    // ... your other existing tenants ...
+  ];
+
+  void _showAddTenantForm() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => AddTenantForm(
+        onTenantAdded: (newTenant) {
+          setState(() => _tenants.add(newTenant));
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          Column(
+         Column(
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
@@ -60,20 +89,19 @@ class TenantsScreen extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: const TenantCard(),
+                    child: TenantCard(tenants: _tenants),
                   ),
                 ),
               ),
             ],
           ),
-          const Positioned(
+          Positioned(
             bottom: 80,
             right: 16,
-            child: FloatingActionButtonWidget(),
+            child:FloatingActionButton2Widget(onPressed: _showAddTenantForm,)
           ),
         ],
       ),
-      // bottomNavigationBar: const BottomNavigation(),
     );
   }
 }

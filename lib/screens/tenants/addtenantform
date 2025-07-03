@@ -1,0 +1,171 @@
+import 'package:flutter/material.dart';
+import '../../models/tenant.dart';
+import '../../constants/colors.dart';
+import '../../constants/assets.dart'; // Add this import
+
+class AddTenantForm extends StatefulWidget {
+  final Function(Tenant) onTenantAdded;
+
+  const AddTenantForm({super.key, required this.onTenantAdded});
+
+  @override
+  State<AddTenantForm> createState() => _AddTenantFormState();
+}
+
+class _AddTenantFormState extends State<AddTenantForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _unitController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  String _status = 'Paid';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _unitController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 16,
+        right: 16,
+        top: 16,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Add New Tenant',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Full Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: AppColors.grey50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter tenant name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _unitController,
+              decoration: InputDecoration(
+                labelText: 'Unit Number',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: AppColors.grey50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter unit number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: AppColors.grey50,
+              ),
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter phone number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _status,
+              decoration: InputDecoration(
+                labelText: 'Payment Status',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: AppColors.grey50,
+              ),
+              items: ['Paid', 'Overdue', 'Due Soon']
+                  .map((status) => DropdownMenuItem(
+                        value: status,
+                        child: Text(status),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _status = value!;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    final newTenant = Tenant(
+                      name: _nameController.text,
+                      unit: _unitController.text,
+                      phone: _phoneController.text,
+                      status: _status,
+                      image: Assets.tenant1,
+                    );
+                    widget.onTenantAdded(newTenant);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Add Tenant',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ], // This closing bracket was missing
+        ),
+      ),
+    );
+  }
+}

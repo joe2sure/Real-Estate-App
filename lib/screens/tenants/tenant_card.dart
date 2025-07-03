@@ -7,48 +7,12 @@ import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 
 class TenantCard extends StatelessWidget {
-  const TenantCard({super.key});
+  final List<Tenant> tenants;
+
+  const TenantCard({super.key, required this.tenants});
 
   @override
   Widget build(BuildContext context) {
-    final tenants = [
-      Tenant(
-        name: 'Emma Mitchell',
-        unit: 'Unit 3A, Parkview Apartments',
-        image: Assets.tenant1,
-        status: 'Paid',
-        phone: '+1 (555) 123-4567',
-      ),
-      Tenant(
-        name: 'Robert Johnson',
-        unit: 'Unit 5B, The Heights',
-        image: Assets.tenant2,
-        status: 'Overdue',
-        phone: '+1 (555) 987-6543',
-      ),
-      Tenant(
-        name: 'Daniel Thompson',
-        unit: 'Unit 2C, Riverside Townhomes',
-        image: Assets.tenant3,
-        status: 'Due Soon',
-        phone: '+1 (555) 456-7890',
-      ),
-      Tenant(
-        name: 'Sarah Williams',
-        unit: 'Unit 4A, Parkview Apartments',
-        image: Assets.tenant4,
-        status: 'Paid',
-        phone: '+1 (555) 789-0123',
-      ),
-      Tenant(
-        name: 'Michael Chen',
-        unit: 'Unit 4A, The Heights',
-        image: Assets.tenant5,
-        status: 'Paid',
-        phone: '+1 (555) 234-5678',
-      ),
-    ];
-
     return Column(
       children: tenants
           .map(

@@ -6,43 +6,12 @@ import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 
 class PropertyCard extends StatelessWidget {
-  const PropertyCard({super.key});
+  final List<Property> properties;
+
+  const PropertyCard({super.key, required this.properties});
 
   @override
   Widget build(BuildContext context) {
-    final properties = [
-      Property(
-        name: 'Parkview Apartments',
-        address: '123 Main Street, New York, NY',
-        image: Assets.property1,
-        status: 'Active',
-        unitsOccupied: 12,
-        totalUnits: 15,
-        occupancy: 80,
-        monthlyIncome: 15400,
-      ),
-      Property(
-        name: 'The Heights',
-        address: '456 Park Avenue, Boston, MA',
-        image: Assets.property2,
-        status: 'Active',
-        unitsOccupied: 8,
-        totalUnits: 10,
-        occupancy: 80,
-        monthlyIncome: 12800,
-      ),
-      Property(
-        name: 'Riverside Townhomes',
-        address: '789 River Road, Chicago, IL',
-        image: Assets.property3,
-        status: 'Maintenance',
-        unitsOccupied: 5,
-        totalUnits: 6,
-        occupancy: 83,
-        monthlyIncome: 8750,
-      ),
-    ];
-
     return Column(
       children: properties
           .map(

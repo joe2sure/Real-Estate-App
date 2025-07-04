@@ -1,22 +1,27 @@
+import 'package:Peeman/screens/dashboard/notification_screen.dart';
 import 'package:Peeman/screens/dashboard/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
-import '../../providers/app_state.dart';
-import '../../widgets/bottom_navigation.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/custom_avatar.dart';
-import '../../widgets/fab.dart';
-// import 'stats_card.dart';
 import 'revenue_chart.dart';
 import 'due_rent_card.dart';
 import 'recent_activity_card.dart';
+// import 'stats_card.dart';
+// import '../../providers/app_state.dart';
+// import '../../widgets/bottom_navigation.dart';
+// import '../../widgets/fab.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+        final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser;
+    final isAdmin = user?.role == 'admin';
     return Scaffold(
       body: Stack(
         children: [
@@ -38,17 +43,23 @@ class DashboardScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Welcome back,',
-                              style: TextStyle(color: AppColors.grey600, fontSize: 14),
-                            ),
-                            const Text(
-                              'James Davidson',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
+                                            Text(
+                  'Welcome, ${user?.firstName ?? "Guest"}!',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),),
+                            // Text(
+                            //   'Welcome back,',
+                            //   style: TextStyle(color: AppColors.grey600, fontSize: 14),
+                            // ),
+                            // const Text(
+                            //   'James Davidson',
+                            //   style: TextStyle(
+                            //     fontWeight: FontWeight.w600,
+                            //     fontSize: 16,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
@@ -58,7 +69,13 @@ class DashboardScreen extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.notifications),
                           color: AppColors.grey600,
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationScreen(),
+                              ),
+                            );
+                          },
                         ),
                         Positioned(
                           top: 8,
@@ -97,14 +114,8 @@ class DashboardScreen extends StatelessWidget {
               ),
             ],
           ),
-          // const Positioned(
-          //   bottom: 80,
-          //   right: 16,
-          //   child: FloatingActionButtonWidget(),
-          // ),
         ],
       ),
-      // bottomNavigationBar: const BottomNavigation(),
     );
   }
 }

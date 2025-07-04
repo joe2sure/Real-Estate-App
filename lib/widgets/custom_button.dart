@@ -3,24 +3,26 @@ import '../constants/colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isGradient;
   final bool isOutline;
   final IconData? icon;
+  final bool isLoading; // Added for loading state
 
   const CustomButton({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
     this.isGradient = false,
     this.isOutline = false,
     this.icon,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         foregroundColor: isOutline ? AppColors.grey600 : AppColors.white,
         backgroundColor: isGradient
@@ -56,7 +58,18 @@ class CustomButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
+              if (isLoading) ...[
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (icon != null && !isLoading) ...[
                 Icon(icon, size: 20),
                 const SizedBox(width: 8),
               ],
@@ -79,12 +92,14 @@ class CustomButton extends StatelessWidget {
 
 
 
+
+
 // import 'package:flutter/material.dart';
 // import '../constants/colors.dart';
 
 // class CustomButton extends StatelessWidget {
 //   final String text;
-//   final VoidCallback onPressed;
+//   final VoidCallback? onPressed; // Changed to nullable VoidCallback?
 //   final bool isGradient;
 //   final bool isOutline;
 //   final IconData? icon;
@@ -92,7 +107,7 @@ class CustomButton extends StatelessWidget {
 //   const CustomButton({
 //     super.key,
 //     required this.text,
-//     required this.onPressed,
+//     this.onPressed, // Nullable
 //     this.isGradient = false,
 //     this.isOutline = false,
 //     this.icon,
@@ -101,20 +116,18 @@ class CustomButton extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     return ElevatedButton(
-//       onPressed: onPressed,
+//       onPressed: onPressed, // Now accepts nullable onPressed
 //       style: ElevatedButton.styleFrom(
-//         foregroundColor: isOutline ? AppColors.grey600 : Colors.white,
+//         foregroundColor: isOutline ? AppColors.grey600 : AppColors.white,
 //         backgroundColor: isGradient
 //             ? null
 //             : isOutline
-//                 ? Colors.white
+//                 ? AppColors.white
 //                 : AppColors.primaryBlue,
 //         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
 //         shape: RoundedRectangleBorder(
 //           borderRadius: BorderRadius.circular(8),
-//           side: isOutline
-//               ? BorderSide(color: AppColors.grey200)
-//               : BorderSide.none,
+//           side: isOutline ? BorderSide(color: AppColors.grey200) : BorderSide.none,
 //         ),
 //         elevation: isOutline ? 0 : 2,
 //       ).copyWith(

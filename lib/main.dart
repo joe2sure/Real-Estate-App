@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'providers/app_state.dart';
+import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/auth/auth_screen.dart';
@@ -11,10 +13,16 @@ import 'screens/payments/payment_screen.dart';
 import 'screens/more/more_screen.dart';
 import 'widgets/bottom_navigation.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => AppState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AppState()),
+        ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -43,7 +51,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const MainScreen(),
-      // Routes are no longer needed since navigation is handled by Navigator
     );
   }
 }
@@ -51,7 +58,6 @@ class MyApp extends StatelessWidget {
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
-  // Map tab names to their respective screens
   Widget _getScreenForTab(String tab) {
     switch (tab) {
       case 'dashboard':
@@ -71,18 +77,16 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, child) {
+    return Consumer2<AppState, AuthProvider>(
+      builder: (context, appState, authProvider, child) {
         Widget content;
         bool showBottomNav = false;
 
         if (appState.onboardingStep >= 0 && appState.onboardingStep < 3) {
           content = const OnboardingScreen();
-        } else if (appState.onboardingStep == -1 && !appState.autoLogin) {
+        } else if (appState.onboardingStep == -1 && !authProvider.isLoggedIn) {
           content = const AuthScreen();
-          showBottomNav = true; // Show bottom nav on auth screen
-        } else if (appState.onboardingStep == -1 && appState.autoLogin) {
-          // Auto-login: Redirect to dashboard
+        } else if (appState.onboardingStep == -1 && authProvider.isLoggedIn) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (appState.activeTab.isEmpty) {
               appState.setActiveTab('dashboard');
@@ -92,7 +96,6 @@ class MainScreen extends StatelessWidget {
           showBottomNav = true;
         } else {
           content = const SplashScreen();
-          showBottomNav = false; // Explicitly hide bottom nav on splash
         }
 
         return Scaffold(
@@ -110,6 +113,7 @@ class MainScreen extends StatelessWidget {
     );
   }
 }
+
 
 
 
@@ -141,7 +145,7 @@ class MainScreen extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     return MaterialApp(
-//       title: 'PropertyPro',
+//       title: 'Peeman Property',
 //       theme: ThemeData(
 //         primaryColor: const Color(0xFF2563EB),
 //         colorScheme: ColorScheme.fromSeed(
@@ -158,14 +162,7 @@ class MainScreen extends StatelessWidget {
 //         ),
 //       ),
 //       home: const MainScreen(),
-//       routes: {
-//         '/dashboard': (context) => const DashboardScreen(),
-//         '/properties': (context) => const PropertiesScreen(),
-//         '/tenants': (context) => const TenantsScreen(),
-//         '/payments': (context) => const PaymentsScreen(),
-//         '/more': (context) => const MoreScreen(),
-//         '/auth': (context) => const AuthScreen(),
-//       },
+//       // Routes are no longer needed since navigation is handled by Navigator
 //     );
 //   }
 // }
@@ -173,32 +170,60 @@ class MainScreen extends StatelessWidget {
 // class MainScreen extends StatelessWidget {
 //   const MainScreen({super.key});
 
+//   // Map tab names to their respective screens
+//   Widget _getScreenForTab(String tab) {
+//     switch (tab) {
+//       case 'dashboard':
+//         return const DashboardScreen();
+//       case 'properties':
+//         return const PropertiesScreen();
+//       case 'tenants':
+//         return const TenantsScreen();
+//       case 'payments':
+//         return const PaymentsScreen();
+//       case 'more':
+//         return const MoreScreen();
+//       default:
+//         return const DashboardScreen();
+//     }
+//   }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Consumer<AppState>(
 //       builder: (context, appState, child) {
 //         Widget content;
+//         bool showBottomNav = false;
+
 //         if (appState.onboardingStep >= 0 && appState.onboardingStep < 3) {
 //           content = const OnboardingScreen();
 //         } else if (appState.onboardingStep == -1 && !appState.autoLogin) {
 //           content = const AuthScreen();
+//           showBottomNav = true; // Show bottom nav on auth screen
 //         } else if (appState.onboardingStep == -1 && appState.autoLogin) {
-//           // Auto-login: Redirect to dashboard after a brief delay
+//           // Auto-login: Redirect to dashboard
 //           WidgetsBinding.instance.addPostFrameCallback((_) {
 //             if (appState.activeTab.isEmpty) {
-//               appState.setActiveTab('dashboard', context: context);
+//               appState.setActiveTab('dashboard');
 //             }
 //           });
-//           content = const DashboardScreen();
+//           content = _getScreenForTab(appState.activeTab);
+//           showBottomNav = true;
 //         } else {
 //           content = const SplashScreen();
+//           showBottomNav = false; // Explicitly hide bottom nav on splash
 //         }
 
 //         return Scaffold(
-//           body: content,
-//           bottomNavigationBar: appState.onboardingStep == -1 || appState.autoLogin
-//               ? const BottomNavigation()
-//               : null,
+//           body: Navigator(
+//             key: GlobalKey<NavigatorState>(),
+//             onGenerateRoute: (settings) {
+//               return MaterialPageRoute(
+//                 builder: (context) => content,
+//               );
+//             },
+//           ),
+//           bottomNavigationBar: showBottomNav ? const BottomNavigation() : null,
 //         );
 //       },
 //     );

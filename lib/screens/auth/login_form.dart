@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_button.dart';
-// import '../../widgets/custom_toast.dart';
-import '../../widgets/custom_toaster.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'auth_screen.dart';
 
@@ -38,12 +37,26 @@ class _LoginFormState extends State<LoginForm> {
       );
 
       if (success) {
-        CustomToast.show(context, 'Login successful', isSuccess: true);
+        Fluttertoast.showToast(
+          msg: 'Login successful',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP_RIGHT,
+          backgroundColor: AppColors.secondaryTeal,
+          textColor: AppColors.white,
+          fontSize: 14.0,
+        );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       } else {
-        CustomToast.show(context, authProvider.errorMessage ?? 'Login failed', isSuccess: false);
+        Fluttertoast.showToast(
+          msg: authProvider.errorMessage ?? 'Login failed',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP_RIGHT,
+          backgroundColor: AppColors.red500,
+          textColor: AppColors.white,
+          fontSize: 14.0,
+        );
       }
     }
   }
@@ -222,12 +235,16 @@ class _LoginFormState extends State<LoginForm> {
 
 
 
+
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 // import '../../constants/colors.dart';
 // import '../../providers/auth_provider.dart';
 // import '../../widgets/custom_button.dart';
+// // import '../../widgets/custom_toast.dart';
+// import '../../widgets/custom_toaster.dart';
 // import '../dashboard/dashboard_screen.dart';
+// import 'auth_screen.dart';
 
 // class LoginForm extends StatefulWidget {
 //   const LoginForm({super.key});
@@ -259,13 +276,12 @@ class _LoginFormState extends State<LoginForm> {
 //       );
 
 //       if (success) {
+//         CustomToast.show(context, 'Login successful', isSuccess: true);
 //         Navigator.of(context).pushReplacement(
 //           MaterialPageRoute(builder: (context) => const DashboardScreen()),
 //         );
 //       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(content: Text(authProvider.errorMessage ?? 'Login failed')),
-//         );
+//         CustomToast.show(context, authProvider.errorMessage ?? 'Login failed', isSuccess: false);
 //       }
 //     }
 //   }
@@ -314,7 +330,9 @@ class _LoginFormState extends State<LoginForm> {
 //                   style: TextStyle(fontWeight: FontWeight.w500),
 //                 ),
 //                 TextButton(
-//                   onPressed: () {},
+//                   onPressed: () {
+//                     // Implement forgot password logic
+//                   },
 //                   child: Text(
 //                     'Forgot?',
 //                     style: TextStyle(color: AppColors.primaryBlue),
@@ -372,10 +390,9 @@ class _LoginFormState extends State<LoginForm> {
 //             const SizedBox(height: 16),
 //             CustomButton(
 //               text: 'Login',
-//               onPressed: authProvider.state == AuthState.loading
-//                   ? null
-//                   : _handleLogin,
+//               onPressed: authProvider.state == AuthState.loading ? null : _handleLogin,
 //               isGradient: true,
+//               isLoading: authProvider.state == AuthState.loading,
 //             ),
 //             const SizedBox(height: 16),
 //             Row(
@@ -383,7 +400,10 @@ class _LoginFormState extends State<LoginForm> {
 //                 Expanded(child: Divider(color: AppColors.grey300)),
 //                 Padding(
 //                   padding: const EdgeInsets.symmetric(horizontal: 16),
-//                   child: Text('or continue with', style: TextStyle(color: AppColors.grey500, fontSize: 12)),
+//                   child: Text(
+//                     'or continue with',
+//                     style: TextStyle(color: AppColors.grey500, fontSize: 12),
+//                   ),
 //                 ),
 //                 Expanded(child: Divider(color: AppColors.grey300)),
 //               ],
@@ -406,6 +426,27 @@ class _LoginFormState extends State<LoginForm> {
 //                     onPressed: () {},
 //                     isOutline: true,
 //                     icon: Icons.apple,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 16),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text(
+//                   "Don't have an account?",
+//                   style: TextStyle(color: AppColors.grey600, fontSize: 14),
+//                 ),
+//                 TextButton(
+//                   onPressed: () {
+//                     Navigator.of(context).pushReplacement(
+//                       MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'register')),
+//                     );
+//                   },
+//                   child: Text(
+//                     'Sign Up',
+//                     style: TextStyle(color: AppColors.primaryBlue),
 //                   ),
 //                 ),
 //               ],

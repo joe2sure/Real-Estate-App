@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_button.dart';
-// import '../../widgets/custom_toast.dart';
-import '../../widgets/custom_toaster.dart';
 import 'auth_screen.dart';
 
 class RegisterForm extends StatefulWidget {
@@ -45,15 +44,36 @@ class _RegisterFormState extends State<RegisterForm> {
       );
 
       if (success) {
-        CustomToast.show(context, 'Registration successful', isSuccess: true);
+        Fluttertoast.showToast(
+          msg: 'Registration successful',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP_RIGHT,
+          backgroundColor: AppColors.secondaryTeal,
+          textColor: AppColors.white,
+          fontSize: 14.0,
+        );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
         );
       } else {
-        CustomToast.show(context, authProvider.errorMessage ?? 'Registration failed', isSuccess: false);
+        Fluttertoast.showToast(
+          msg: authProvider.errorMessage ?? 'Registration failed',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP_RIGHT,
+          backgroundColor: AppColors.red500,
+          textColor: AppColors.white,
+          fontSize: 14.0,
+        );
       }
     } else if (!_agreeToTerms) {
-      CustomToast.show(context, 'Please agree to the Terms of Service', isSuccess: false);
+      Fluttertoast.showToast(
+        msg: 'Please agree to the Terms of Service',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP_RIGHT,
+        backgroundColor: AppColors.red500,
+        textColor: AppColors.white,
+        fontSize: 14.0,
+      );
     }
   }
 
@@ -313,6 +333,8 @@ class _RegisterFormState extends State<RegisterForm> {
 // import '../../constants/colors.dart';
 // import '../../providers/auth_provider.dart';
 // import '../../widgets/custom_button.dart';
+// // import '../../widgets/custom_toast.dart';
+// import '../../widgets/custom_toaster.dart';
 // import 'auth_screen.dart';
 
 // class RegisterForm extends StatefulWidget {
@@ -353,18 +375,15 @@ class _RegisterFormState extends State<RegisterForm> {
 //       );
 
 //       if (success) {
+//         CustomToast.show(context, 'Registration successful', isSuccess: true);
 //         Navigator.of(context).pushReplacement(
-//           MaterialPageRoute(builder: (context) => const AuthScreen()),
+//           MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
 //         );
 //       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(content: Text(authProvider.errorMessage ?? 'Registration failed')),
-//         );
+//         CustomToast.show(context, authProvider.errorMessage ?? 'Registration failed', isSuccess: false);
 //       }
 //     } else if (!_agreeToTerms) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Please agree to the Terms of Service')),
-//       );
+//       CustomToast.show(context, 'Please agree to the Terms of Service', isSuccess: false);
 //     }
 //   }
 
@@ -547,10 +566,9 @@ class _RegisterFormState extends State<RegisterForm> {
 //             const SizedBox(height: 16),
 //             CustomButton(
 //               text: 'Create Account',
-//               onPressed: authProvider.state == AuthState.loading
-//                   ? null
-//                   : _handleRegister,
+//               onPressed: authProvider.state == AuthState.loading ? null : _handleRegister,
 //               isGradient: true,
+//               isLoading: authProvider.state == AuthState.loading,
 //             ),
 //             const SizedBox(height: 16),
 //             Row(
@@ -558,7 +576,10 @@ class _RegisterFormState extends State<RegisterForm> {
 //                 Expanded(child: Divider(color: AppColors.grey300)),
 //                 Padding(
 //                   padding: const EdgeInsets.symmetric(horizontal: 16),
-//                   child: Text('or sign up with', style: TextStyle(color: AppColors.grey500, fontSize: 12)),
+//                   child: Text(
+//                     'or sign up with',
+//                     style: TextStyle(color: AppColors.grey500, fontSize: 12),
+//                   ),
 //                 ),
 //                 Expanded(child: Divider(color: AppColors.grey300)),
 //               ],
@@ -581,6 +602,27 @@ class _RegisterFormState extends State<RegisterForm> {
 //                     onPressed: () {},
 //                     isOutline: true,
 //                     icon: Icons.apple,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 16),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text(
+//                   'Already have an account?',
+//                   style: TextStyle(color: AppColors.grey600, fontSize: 14),
+//                 ),
+//                 TextButton(
+//                   onPressed: () {
+//                     Navigator.of(context).pushReplacement(
+//                       MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
+//                     );
+//                   },
+//                   child: Text(
+//                     'Sign In',
+//                     style: TextStyle(color: AppColors.primaryBlue),
 //                   ),
 //                 ),
 //               ],

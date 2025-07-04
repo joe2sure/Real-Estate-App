@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
@@ -6,8 +7,6 @@ import '../../constants/strings.dart';
 import '../../providers/app_state.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
-// import '../../widgets/custom_toast.dart';
-import '../../widgets/custom_toaster.dart';
 import '../auth/auth_screen.dart';
 import 'profile_card.dart';
 
@@ -205,18 +204,57 @@ class MoreScreen extends StatelessWidget {
                                 bgColor: AppColors.red100,
                                 title: 'Logout',
                                 textColor: AppColors.red600,
-                                onTap: () async {
-                                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                                  final success = await authProvider.logout();
-                                  if (success) {
-                                    CustomToast.show(context, 'Logout successful', isSuccess: true);
-                                    Navigator.of(context).pushAndRemoveUntil(
-                                      MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
-                                      (route) => false,
-                                    );
-                                  } else {
-                                    CustomToast.show(context, authProvider.errorMessage ?? 'Logout failed', isSuccess: false);
-                                  }
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Confirm Logout'),
+                                      content: const Text('Are you sure you want to log out?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: Text(
+                                            'Cancel',
+                                            style: TextStyle(color: AppColors.grey600),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            Navigator.pop(context); // Close dialog
+                                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                            final success = await authProvider.logout();
+                                            if (success) {
+                                              Fluttertoast.showToast(
+                                                msg: 'Logout successful',
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                gravity: ToastGravity.TOP_RIGHT,
+                                                backgroundColor: AppColors.secondaryTeal,
+                                                textColor: AppColors.white,
+                                                fontSize: 14.0,
+                                              );
+                                              Navigator.of(context).pushAndRemoveUntil(
+                                                MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
+                                                (route) => false,
+                                              );
+                                            } else {
+                                              Fluttertoast.showToast(
+                                                msg: authProvider.errorMessage ?? 'Logout failed',
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                gravity: ToastGravity.TOP_RIGHT,
+                                                backgroundColor: AppColors.red500,
+                                                textColor: AppColors.white,
+                                                fontSize: 14.0,
+                                              );
+                                            }
+                                          },
+                                          child: Text(
+                                            'Logout',
+                                            style: TextStyle(color: AppColors.red600),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
                                 },
                               ),
                             ],
@@ -316,8 +354,11 @@ class MoreScreen extends StatelessWidget {
 // import '../../constants/colors.dart';
 // import '../../constants/strings.dart';
 // import '../../providers/app_state.dart';
-// import '../../widgets/bottom_navigation.dart';
+// import '../../providers/auth_provider.dart';
 // import '../../widgets/custom_card.dart';
+// // import '../../widgets/custom_toast.dart';
+// import '../../widgets/custom_toaster.dart';
+// import '../auth/auth_screen.dart';
 // import 'profile_card.dart';
 
 // class MoreScreen extends StatelessWidget {
@@ -363,24 +404,30 @@ class MoreScreen extends StatelessWidget {
 //                           child: Column(
 //                             children: [
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.person,
 //                                 iconColor: AppColors.primaryBlue,
 //                                 bgColor: AppColors.blue100,
 //                                 title: 'Staff Management',
+//                                 onTap: () {},
 //                               ),
 //                               const Divider(height: 1),
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.bar_chart,
 //                                 iconColor: AppColors.purple600,
 //                                 bgColor: AppColors.purple100,
 //                                 title: 'Reports',
+//                                 onTap: () {},
 //                               ),
 //                               const Divider(height: 1),
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.description,
 //                                 iconColor: AppColors.amber500,
 //                                 bgColor: AppColors.amber100,
 //                                 title: 'Documents',
+//                                 onTap: () {},
 //                               ),
 //                             ],
 //                           ),
@@ -399,13 +446,16 @@ class MoreScreen extends StatelessWidget {
 //                           child: Column(
 //                             children: [
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.notifications,
 //                                 iconColor: AppColors.secondaryTeal,
 //                                 bgColor: AppColors.green100,
 //                                 title: 'Notifications',
+//                                 onTap: () {},
 //                               ),
 //                               const Divider(height: 1),
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.email,
 //                                 iconColor: AppColors.primaryBlue,
 //                                 bgColor: AppColors.blue100,
@@ -427,6 +477,7 @@ class MoreScreen extends StatelessWidget {
 //                                     ),
 //                                   ),
 //                                 ),
+//                                 onTap: () {},
 //                               ),
 //                             ],
 //                           ),
@@ -445,10 +496,12 @@ class MoreScreen extends StatelessWidget {
 //                           child: Column(
 //                             children: [
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.settings,
 //                                 iconColor: AppColors.grey600,
 //                                 bgColor: AppColors.grey100,
 //                                 title: 'Settings',
+//                                 onTap: () {},
 //                               ),
 //                               const Divider(height: 1),
 //                               Padding(
@@ -487,18 +540,34 @@ class MoreScreen extends StatelessWidget {
 //                               ),
 //                               const Divider(height: 1),
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.help_outline,
 //                                 iconColor: AppColors.primaryBlue,
 //                                 bgColor: AppColors.blue100,
 //                                 title: 'Help & Support',
+//                                 onTap: () {},
 //                               ),
 //                               const Divider(height: 1),
 //                               _buildMenuItem(
+//                                 context,
 //                                 icon: Icons.logout,
 //                                 iconColor: AppColors.red600,
 //                                 bgColor: AppColors.red100,
 //                                 title: 'Logout',
 //                                 textColor: AppColors.red600,
+//                                 onTap: () async {
+//                                   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+//                                   final success = await authProvider.logout();
+//                                   if (success) {
+//                                     CustomToast.show(context, 'Logout successful', isSuccess: true);
+//                                     Navigator.of(context).pushAndRemoveUntil(
+//                                       MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
+//                                       (route) => false,
+//                                     );
+//                                   } else {
+//                                     CustomToast.show(context, authProvider.errorMessage ?? 'Logout failed', isSuccess: false);
+//                                   }
+//                                 },
 //                               ),
 //                             ],
 //                           ),
@@ -537,16 +606,18 @@ class MoreScreen extends StatelessWidget {
 //     );
 //   }
 
-//     Widget _buildMenuItem({
+//   Widget _buildMenuItem(
+//     BuildContext context, {
 //     required IconData icon,
 //     required Color iconColor,
 //     required Color bgColor,
 //     required String title,
 //     Color textColor = Colors.black,
 //     Widget? badge,
+//     required VoidCallback onTap,
 //   }) {
 //     return InkWell(
-//       onTap: () {},
+//       onTap: onTap,
 //       child: Padding(
 //         padding: const EdgeInsets.all(12),
 //         child: Row(

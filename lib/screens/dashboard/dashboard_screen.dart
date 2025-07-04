@@ -31,9 +31,14 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        CustomAvatar(
-                          imageUrl: Assets.user,
-                          fallbackText: 'JD',
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                           Assets.user,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(

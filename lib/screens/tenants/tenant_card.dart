@@ -23,10 +23,14 @@ class TenantCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      CustomAvatar(
-                        imageUrl: tenant.image,
-                        fallbackText: tenant.name[0],
-                        size: 48,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.asset(
+                          tenant.image,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

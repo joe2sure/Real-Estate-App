@@ -66,10 +66,14 @@ class RecentPaymentCard extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        CustomAvatar(
-                          imageUrl: payment.image,
-                          fallbackText: payment.tenantName[0],
-                          size: 40,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            payment.image,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

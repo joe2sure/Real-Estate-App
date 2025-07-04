@@ -17,10 +17,14 @@ class ProfileCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CustomAvatar(
-                  imageUrl: Assets.user,
-                  fallbackText: 'JD',
-                  size: 64,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Image.asset(
+                    Assets.user,
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

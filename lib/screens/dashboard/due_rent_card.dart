@@ -77,10 +77,14 @@ class DueRentCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            CustomAvatar(
-                              imageUrl: rent['image'] as String,
-                              fallbackText: rent['name'].toString()[0],
-                              size: 32,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                rent['image'] as String,
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Column(

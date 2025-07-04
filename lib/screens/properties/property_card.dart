@@ -24,7 +24,7 @@ class PropertyCard extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                          child: Image.network(
+                          child: Image.asset(
                             property.image,
                             height: 192,
                             width: double.infinity,

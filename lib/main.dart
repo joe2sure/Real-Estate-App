@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'providers/app_state.dart';
 import 'providers/auth_provider.dart';
+import 'providers/dashboard_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/auth/auth_screen.dart';
@@ -16,12 +17,13 @@ import 'widgets/bottom_navigation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
+        ChangeNotifierProvider(create: (context) => DashboardProvider()),
       ],
       child: const MyApp(),
     ),
@@ -50,7 +52,9 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),
       ),
-      home: const MainScreen(),
+      home: ScaffoldMessenger(
+        child: const MainScreen(),
+      ),
     );
   }
 }
@@ -116,10 +120,11 @@ class MainScreen extends StatelessWidget {
 
 
 
-
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
+// import 'package:hive_flutter/hive_flutter.dart';
 // import 'providers/app_state.dart';
+// import 'providers/auth_provider.dart';
 // import 'screens/splash_screen.dart';
 // import 'screens/onboarding_screen.dart';
 // import 'screens/auth/auth_screen.dart';
@@ -130,10 +135,16 @@ class MainScreen extends StatelessWidget {
 // import 'screens/more/more_screen.dart';
 // import 'widgets/bottom_navigation.dart';
 
-// void main() {
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await Hive.initFlutter();
+  
 //   runApp(
-//     ChangeNotifierProvider(
-//       create: (context) => AppState(),
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (context) => AppState()),
+//         ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
+//       ],
 //       child: const MyApp(),
 //     ),
 //   );
@@ -162,7 +173,6 @@ class MainScreen extends StatelessWidget {
 //         ),
 //       ),
 //       home: const MainScreen(),
-//       // Routes are no longer needed since navigation is handled by Navigator
 //     );
 //   }
 // }
@@ -170,7 +180,6 @@ class MainScreen extends StatelessWidget {
 // class MainScreen extends StatelessWidget {
 //   const MainScreen({super.key});
 
-//   // Map tab names to their respective screens
 //   Widget _getScreenForTab(String tab) {
 //     switch (tab) {
 //       case 'dashboard':
@@ -190,18 +199,16 @@ class MainScreen extends StatelessWidget {
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Consumer<AppState>(
-//       builder: (context, appState, child) {
+//     return Consumer2<AppState, AuthProvider>(
+//       builder: (context, appState, authProvider, child) {
 //         Widget content;
 //         bool showBottomNav = false;
 
 //         if (appState.onboardingStep >= 0 && appState.onboardingStep < 3) {
 //           content = const OnboardingScreen();
-//         } else if (appState.onboardingStep == -1 && !appState.autoLogin) {
+//         } else if (appState.onboardingStep == -1 && !authProvider.isLoggedIn) {
 //           content = const AuthScreen();
-//           showBottomNav = true; // Show bottom nav on auth screen
-//         } else if (appState.onboardingStep == -1 && appState.autoLogin) {
-//           // Auto-login: Redirect to dashboard
+//         } else if (appState.onboardingStep == -1 && authProvider.isLoggedIn) {
 //           WidgetsBinding.instance.addPostFrameCallback((_) {
 //             if (appState.activeTab.isEmpty) {
 //               appState.setActiveTab('dashboard');
@@ -211,7 +218,6 @@ class MainScreen extends StatelessWidget {
 //           showBottomNav = true;
 //         } else {
 //           content = const SplashScreen();
-//           showBottomNav = false; // Explicitly hide bottom nav on splash
 //         }
 
 //         return Scaffold(

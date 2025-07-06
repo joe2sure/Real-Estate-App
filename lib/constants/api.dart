@@ -3,4 +3,5 @@ class ApiEndpoints {
   static const String login = '$baseUrl/auth/login';
   static const String register = '$baseUrl/auth/register';
   static const String logout = '$baseUrl/auth/logout';
+  static const String properties = '$baseUrl/properties';
 }

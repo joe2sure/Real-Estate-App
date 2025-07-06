@@ -179,7 +179,7 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
                   occupancy: (int.parse(_unitsOccupiedController.text) /
                     int.parse(_totalUnitsController.text) *
                     100),
-                  monthlyIncome: double.parse(_monthlyIncomeController.text),
+                  monthlyIncome: double.parse(_monthlyIncomeController.text), id: '',
                   );
                   widget.onPropertyAdded(newProperty);
                 }

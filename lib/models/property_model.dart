@@ -1,7 +1,8 @@
 class Property {
+  final String id;
   final String name;
   final String address;
-  final String image;
+  final String image; // Using first image from API's images array
   final String status;
   final int unitsOccupied;
   final int totalUnits;
@@ -9,6 +10,7 @@ class Property {
   final double monthlyIncome;
 
   Property({
+    required this.id,
     required this.name,
     required this.address,
     required this.image,
@@ -19,8 +21,24 @@ class Property {
     required this.monthlyIncome,
   });
 
-  // Optional: Add copyWith method for immutability
+  factory Property.fromJson(Map<String, dynamic> json) {
+    return Property(
+      id: json['_id'],
+      name: json['name'],
+      address: json['address'],
+      image: json['images'] != null && json['images'].isNotEmpty
+          ? json['images'][0]
+          : 'https://via.placeholder.com/150', // Fallback image
+      status: json['status'],
+      unitsOccupied: json['occupiedUnits'],
+      totalUnits: json['totalUnits'],
+      occupancy: json['occupancyRate'].toDouble(),
+      monthlyIncome: json['monthlyIncome'].toDouble(),
+    );
+  }
+
   Property copyWith({
+    String? id,
     String? name,
     String? address,
     String? image,
@@ -31,6 +49,7 @@ class Property {
     double? monthlyIncome,
   }) {
     return Property(
+      id: id ?? this.id,
       name: name ?? this.name,
       address: address ?? this.address,
       image: image ?? this.image,

@@ -29,7 +29,7 @@ class PropertyCard extends StatelessWidget {
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/images/placeholder.png', // Fallback asset image
+                              'assets/images/placeholder.png',
                               height: 192,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -145,9 +145,7 @@ class PropertyCard extends StatelessWidget {
 
 
 
-
 // import 'package:flutter/material.dart';
-// import '../../constants/assets.dart';
 // import '../../constants/colors.dart';
 // import '../../models/property_model.dart';
 // import '../../widgets/custom_badge.dart';
@@ -172,11 +170,17 @@ class PropertyCard extends StatelessWidget {
 //                       children: [
 //                         ClipRRect(
 //                           borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-//                           child: Image.asset(
+//                           child: Image.network(
 //                             property.image,
 //                             height: 192,
 //                             width: double.infinity,
 //                             fit: BoxFit.cover,
+//                             errorBuilder: (context, error, stackTrace) => Image.asset(
+//                               'assets/images/placeholder.png', // Fallback asset image
+//                               height: 192,
+//                               width: double.infinity,
+//                               fit: BoxFit.cover,
+//                             ),
 //                           ),
 //                         ),
 //                         Positioned(
@@ -184,7 +188,7 @@ class PropertyCard extends StatelessWidget {
 //                           right: 12,
 //                           child: CustomBadge(
 //                             text: property.status,
-//                             backgroundColor: property.status == 'Active' ? AppColors.green500 : AppColors.amber500,
+//                             backgroundColor: property.status == 'active' ? AppColors.green500 : AppColors.amber500,
 //                             textColor: AppColors.white,
 //                           ),
 //                         ),
@@ -244,7 +248,7 @@ class PropertyCard extends StatelessWidget {
 //                                     ),
 //                                   ),
 //                                   Text(
-//                                     '${property.occupancy}%',
+//                                     '${property.occupancy.toStringAsFixed(0)}%',
 //                                     style: const TextStyle(
 //                                       fontSize: 14,
 //                                       fontWeight: FontWeight.w500,

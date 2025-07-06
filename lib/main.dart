@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/property_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -24,6 +25,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
         ChangeNotifierProvider(create: (context) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => PropertyProvider()),
       ],
       child: const MyApp(),
     ),

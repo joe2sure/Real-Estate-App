@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../../constants/colors.dart';
 import '../../models/property_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../constants/api.dart';
-import '../../widgets/bottom_navigation.dart';
+import '../../providers/property_provider.dart';
 import '../../widgets/fab.dart';
 import 'property_card.dart';
-import 'addproperty.dart';
+import 'add_property.dart';
 
 class PropertiesScreen extends StatefulWidget {
   const PropertiesScreen({super.key});
@@ -19,89 +16,30 @@ class PropertiesScreen extends StatefulWidget {
 }
 
 class _PropertiesScreenState extends State<PropertiesScreen> {
-  List<Property> _properties = [];
-  bool _isLoading = false;
-  String? _errorMessage;
-
   @override
   void initState() {
     super.initState();
-    _fetchProperties();
-  }
-
-  Future<void> _fetchProperties() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint('PropertiesScreen: Initializing fetchProperties');
+      Provider.of<PropertyProvider>(context, listen: false).fetchProperties(context: context);
     });
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final token = authProvider.token;
-
-    if (token == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Please log in to view properties';
-      });
-      return;
-    }
-
-    try {
-      final response = await http.get(
-        Uri.parse(ApiEndpoints.properties),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          setState(() {
-            _properties = (data['data'] as List)
-                .map((json) => Property.fromJson(json))
-                .toList();
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _errorMessage = data['message'] ?? 'Failed to fetch properties';
-            _isLoading = false;
-          });
-        }
-      } else {
-        setState(() {
-          _errorMessage = 'Server error: ${response.statusCode}';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
   }
 
   void _showAddPropertyForm() {
+    debugPrint('PropertiesScreen: Showing AddPropertyForm');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => AddPropertyForm(
-        onPropertyAdded: (newProperty) {
-          setState(() {
-            _properties.add(newProperty);
-          });
-          Navigator.pop(context);
-        },
-      ),
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => const AddPropertyForm(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final propertyProvider = Provider.of<PropertyProvider>(context);
     final isAdmin = authProvider.currentUser?.role == 'admin';
 
     return Scaffold(
@@ -154,14 +92,29 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                 ),
               ),
               Expanded(
-                child: _isLoading
+                child: propertyProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : _errorMessage != null
-                        ? Center(child: Text(_errorMessage!))
+                    : propertyProvider.errorMessage != null
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(propertyProvider.errorMessage!),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Provider.of<PropertyProvider>(context, listen: false)
+                                        .fetchProperties(context: context);
+                                  },
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          )
                         : SingleChildScrollView(
                             child: Padding(
                               padding: const EdgeInsets.all(16),
-                              child: PropertyCard(properties: _properties),
+                              child: PropertyCard(properties: propertyProvider.properties),
                             ),
                           ),
               ),
@@ -183,19 +136,15 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
 
 
 
-
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 // import '../../constants/colors.dart';
 // import '../../models/property_model.dart';
-// // import '../../providers/app_state.dart';
 // import '../../providers/auth_provider.dart';
-// import '../../widgets/bottom_navigation.dart';
-// // import '../../widgets/fab.dart';
+// import '../../providers/property_provider.dart';
 // import '../../widgets/fab.dart';
 // import 'property_card.dart';
-// import 'addproperty.dart';
-// import '../../constants/assets.dart';
+// import 'add_property.dart';
 
 // class PropertiesScreen extends StatefulWidget {
 //   const PropertiesScreen({super.key});
@@ -205,57 +154,28 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
 // }
 
 // class _PropertiesScreenState extends State<PropertiesScreen> {
-//   final List<Property> _properties = [
-//     Property(
-//       name: 'Parkview Apartments',
-//       address: '123 Main Street, New York, NY',
-//       image: Assets.property1,
-//       status: 'Active',
-//       unitsOccupied: 12,
-//       totalUnits: 15,
-//       occupancy: 80,
-//       monthlyIncome: 15400,
-//     ),
-//     Property(
-//       name: 'The Heights',
-//       address: '456 Park Avenue, Boston, MA',
-//       image: Assets.property2,
-//       status: 'Active',
-//       unitsOccupied: 8,
-//       totalUnits: 10,
-//       occupancy: 80,
-//       monthlyIncome: 12800,
-//     ),
-//     Property(
-//       name: 'Riverside Townhomes',
-//       address: '789 River Road, Chicago, IL',
-//       image: Assets.property3,
-//       status: 'Maintenance',
-//       unitsOccupied: 5,
-//       totalUnits: 6,
-//       occupancy: 83,
-//       monthlyIncome: 8750,
-//     ),
-//   ];
+//   @override
+//   void initState() {
+//     super.initState();
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       Provider.of<PropertyProvider>(context, listen: false).fetchProperties();
+//     });
+//   }
 
 //   void _showAddPropertyForm() {
 //     showModalBottomSheet(
 //       context: context,
 //       isScrollControlled: true,
-//       builder: (context) => AddPropertyForm(
-//         onPropertyAdded: (newProperty) {
-//           setState(() {
-//             _properties.add(newProperty);
-//           });
-//           Navigator.pop(context);
-//         },
-//       ),
+//       isDismissible: true,
+//       enableDrag: true,
+//       builder: (context) => const AddPropertyForm(),
 //     );
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     final authProvider = Provider.of<AuthProvider>(context);
+//     final propertyProvider = Provider.of<PropertyProvider>(context);
 //     final isAdmin = authProvider.currentUser?.role == 'admin';
 
 //     return Scaffold(
@@ -308,12 +228,16 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
 //                 ),
 //               ),
 //               Expanded(
-//                 child: SingleChildScrollView(
-//                   child: Padding(
-//                     padding: const EdgeInsets.all(16),
-//                     child: PropertyCard(properties: _properties),
-//                   ),
-//                 ),
+//                 child: propertyProvider.isLoading
+//                     ? const Center(child: CircularProgressIndicator())
+//                     : propertyProvider.errorMessage != null
+//                         ? Center(child: Text(propertyProvider.errorMessage!))
+//                         : SingleChildScrollView(
+//                             child: Padding(
+//                               padding: const EdgeInsets.all(16),
+//                               child: PropertyCard(properties: propertyProvider.properties),
+//                             ),
+//                           ),
 //               ),
 //             ],
 //           ),

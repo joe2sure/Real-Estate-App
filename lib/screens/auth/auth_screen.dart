@@ -1,4 +1,6 @@
+import 'package:Peeman/constants/assets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../constants/colors.dart';
 import 'login_form.dart';
 import 'register_form.dart';
@@ -32,9 +34,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/peeman-logo.png', // Update with correct asset path
-                      height: 80,
+                    SvgPicture.asset(
+                      'assets/images/peeman-logo.svg',
                     ),
                     const SizedBox(height: 16),
                     Row(

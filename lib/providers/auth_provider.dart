@@ -160,5 +160,3 @@ class AuthProvider with ChangeNotifier {
     }
   }
 }
-
-

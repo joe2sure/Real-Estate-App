@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/property_provider.dart';
 import 'package:Peeman/providers/tenant_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,7 @@ void main() async {
 
         ChangeNotifierProvider(create: (context) => TenantProvider()),
         ChangeNotifierProvider(create: (context) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => PropertyProvider()),
       ],
       child: const MyApp(),
     ),

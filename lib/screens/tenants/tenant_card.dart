@@ -22,7 +22,11 @@ class TenantCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      
+                        CustomAvatar(
+                        imageUrl: '${tenant.firstName[0]}${tenant.lastName[0]}',
+                        size: 48,
+                        fallbackText: '${tenant.firstName[0]}${tenant.lastName[0]}', // Provide the required fallbackText argument
+                        ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(

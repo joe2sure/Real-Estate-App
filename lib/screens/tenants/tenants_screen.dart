@@ -24,7 +24,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
     super.initState();
     // Load tenants when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<TenantProvider>(context, listen: false).loadTenants();
+      Provider.of<TenantProvider>(context, listen: false).loadTenants( context);
     });
   }
 

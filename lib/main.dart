@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/tenant_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -23,6 +24,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
+
+        ChangeNotifierProvider(create: (context) => TenantProvider()),
         ChangeNotifierProvider(create: (context) => DashboardProvider()),
       ],
       child: const MyApp(),

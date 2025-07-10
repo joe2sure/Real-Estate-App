@@ -1,3 +1,4 @@
+
 import 'package:Peeman/models/tenant_model.dart';
 import 'package:Peeman/screens/tenants/add_tenant_form';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) => AddTenantForm(
-        onTenantAdded: (Tenant newTenant) {
+        onTenantAdded: (tenant newTenant) {
          
         },
       ),
@@ -104,7 +105,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                         : SingleChildScrollView(
                             child: Padding(
                               padding: const EdgeInsets.all(16),
-                              child: TenantCard(tenants: tenantProvider.tenants),
+                              child: TenantCard(tenants: tenantProvider.tenants ),
                             ),
                           ),
               ),

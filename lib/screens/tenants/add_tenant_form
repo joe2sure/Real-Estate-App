@@ -27,6 +27,26 @@ class _AddTenantFormState extends State<AddTenantForm> {
     super.dispose();
   }
 
+Future<void> addTenant()async{
+  final tenantProvider = Provider.of<TenantProvider>(context, listen: false);
+   await tenantProvider.addTenant(
+   firstName: _nameController.text,
+      lastName: _lastNameController.text,
+      email: _emailController.text,
+      phone: _phoneController.text,
+      unit: _unitController.text,
+      property: _propertyController.text,
+      rentAmount: rentAmount,
+      securityDeposit: securityDeposit,
+      leaseStartDate: leaseStartDate,
+      leaseEndDate: leaseEndDate,
+      nextPaymentDue: nextPaymentDue,
+      emergencyContactName: emergencyContactName,
+      emergencyContactPhone: emergencyContactPhone,
+      emergencyContactRelationship: emergencyContactRelationship,
+  );
+  Navigator.of(context).pop();
+}
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -139,14 +159,7 @@ class _AddTenantFormState extends State<AddTenantForm> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    final newTenant = Tenant(
-                      name: _nameController.text,
-                      unit: _unitController.text,
-                      phone: _phoneController.text,
-                      status: _status,
-                      image: Assets.tenant1,
-                    );
-                    widget.onTenantAdded(newTenant);
+                    
                   }
                 },
                 style: ElevatedButton.styleFrom(

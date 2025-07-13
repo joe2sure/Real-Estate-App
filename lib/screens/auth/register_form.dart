@@ -255,6 +255,7 @@ class _RegisterFormState extends State<RegisterForm> {
             ),
             const SizedBox(height: 16),
             CustomButton(
+              
               text: 'Create Account',
               onPressed: authProvider.state == AuthState.loading ? null : _handleRegister,
               isGradient: true,

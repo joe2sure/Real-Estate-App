@@ -1,14 +1,15 @@
+import 'package:Peeman/models/tenant_model.dart';
 import 'package:Peeman/screens/tenants/add_tenant_form';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
-import '../../constants/assets.dart';
-import '../../models/tenant_model.dart';
+import '../../models/tenant.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/tenant_provider.dart';
 import '../../widgets/bottom_navigation.dart';
 import '../../widgets/fab.dart';
 import 'tenant_card.dart';
-// import 'add_tenant_form.dart';
+
 
 class TenantsScreen extends StatefulWidget {
   const TenantsScreen({super.key});
@@ -18,16 +19,14 @@ class TenantsScreen extends StatefulWidget {
 }
 
 class _TenantsScreenState extends State<TenantsScreen> {
-  final List<Tenant> _tenants = [
-    Tenant(
-      name: 'Emma Mitchell',
-      unit: 'Unit 3A, Parkview Apartments',
-      image: Assets.tenant1,
-      status: 'Paid',
-      phone: '+1 (555) 123-4567',
-    ),
-    // ... other existing tenants ...
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load tenants when the screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TenantProvider>(context, listen: false).loadTenants( context);
+    });
+  }
 
   void _showAddTenantForm() {
     showModalBottomSheet(
@@ -35,8 +34,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
       isScrollControlled: true,
       builder: (context) => AddTenantForm(
         onTenantAdded: (Tenant newTenant) {
-          setState(() => _tenants.add(newTenant));
-          Navigator.pop(context);
+         
         },
       ),
     );
@@ -45,6 +43,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final tenantProvider = Provider.of<TenantProvider>(context);
     final isAdmin = authProvider.currentUser?.role == 'admin';
 
     return Scaffold(
@@ -80,12 +79,17 @@ class _TenantsScreenState extends State<TenantsScreen> {
                               filled: true,
                               fillColor: AppColors.grey100,
                             ),
+                            onChanged: (value) {
+                              // Implement search functionality if needed
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.filter_list, color: AppColors.grey600),
-                          onPressed: () {},
+                          onPressed: () {
+                            // Implement filter functionality if needed
+                          },
                         ),
                       ],
                     ),
@@ -93,12 +97,16 @@ class _TenantsScreenState extends State<TenantsScreen> {
                 ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TenantCard(tenants: _tenants),
-                  ),
-                ),
+                child: tenantProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : tenantProvider.tenants.isEmpty
+                        ? const Center(child: Text('No tenants found'))
+                        : SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: TenantCard(tenants: tenantProvider.tenants),
+                            ),
+                          ),
               ),
             ],
           ),
@@ -110,6 +118,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
             ),
         ],
       ),
+    
     );
   }
 }

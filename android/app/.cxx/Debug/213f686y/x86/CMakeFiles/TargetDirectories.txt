@@ -1,0 +1,2 @@
+C:/Users/ewoch/Real-Estate-App/android/app/.cxx/Debug/213f686y/x86/CMakeFiles/edit_cache.dir
+C:/Users/ewoch/Real-Estate-App/android/app/.cxx/Debug/213f686y/x86/CMakeFiles/rebuild_cache.dir

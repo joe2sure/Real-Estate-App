@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           side: isOutline ? BorderSide(color: AppColors.grey200) : BorderSide.none,
         ),
-        elevation: isOutline ? 0 : 2,
+        elevation:  0 ,
       ).copyWith(
         backgroundColor: isGradient
             ? MaterialStateProperty.all(Colors.transparent)
@@ -43,6 +43,7 @@ class CustomButton extends StatelessWidget {
         overlayColor: MaterialStateProperty.all(Colors.black12),
       ),
       child: Container(
+        height: 50,
         decoration: isGradient
             ? BoxDecoration(
                 gradient: LinearGradient(

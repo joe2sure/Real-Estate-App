@@ -1,0 +1,3 @@
+-keep class com.hivemq.** { *; }
+-keep class io.flutter.plugins.imagepicker.** { *; }
+-dontwarn io.flutter.embedding.**

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../constants/assets.dart';
 import '../../constants/colors.dart';
-import '../../models/tenant_model.dart';
+import '../../models/tenant.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 
 class TenantCard extends StatelessWidget {
-  final List<Tenant> tenants;
+  final List<tenant> tenants;
 
   const TenantCard({super.key, required this.tenants});
 
@@ -23,15 +22,11 @@ class TenantCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.asset(
-                          tenant.image,
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
+                        CustomAvatar(
+                        imageUrl: '${tenant.firstName[0]}${tenant.lastName[0]}',
+                        size: 48,
+                        fallbackText: '${tenant.firstName[0]}${tenant.lastName[0]}', // Provide the required fallbackText argument
                         ),
-                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -41,7 +36,7 @@ class TenantCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  tenant.name,
+                                  '${tenant.firstName} ${tenant.lastName}',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -49,21 +44,21 @@ class TenantCard extends StatelessWidget {
                                 ),
                                 CustomBadge(
                                   text: tenant.status,
-                                  backgroundColor: tenant.status == 'Paid'
+                                  backgroundColor: tenant.status == 'paid'
                                       ? AppColors.green100
-                                      : tenant.status == 'Overdue'
+                                      : tenant.status == 'overdue'
                                           ? AppColors.red100
                                           : AppColors.amber100,
-                                  textColor: tenant.status == 'Paid'
-                                      ? AppColors.amber500
-                                      : tenant.status == 'Overdue'
+                                  textColor: tenant.status == 'paid'
+                                      ? AppColors.green500
+                                      : tenant.status == 'overdue'
                                           ? AppColors.red500
                                           : AppColors.amber500,
                                 ),
                               ],
                             ),
                             Text(
-                              tenant.unit,
+                              '${tenant.unit}, ${tenant.property.name}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.grey500,

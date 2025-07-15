@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../models/property_model.dart';
@@ -18,9 +19,11 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _unitsOccupiedController = TextEditingController();
+  final TextEditingController _unitsOccupiedController =
+      TextEditingController();
   final TextEditingController _totalUnitsController = TextEditingController();
-  final TextEditingController _monthlyIncomeController = TextEditingController();
+  final TextEditingController _monthlyIncomeController =
+      TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _amenityController = TextEditingController();
   String _status = 'active';
@@ -46,14 +49,34 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
     debugPrint('AddPropertyForm: Removed amenity: $amenity');
   }
 
+  // Future<void> _pickImages() async {
+  //   final picker = ImagePicker();
+  //   final pickedFiles = await picker.pickMultiImage();
+  //   setState(() {
+  //     _imagePaths = pickedFiles.map((file) => file.path).toList();
+  //     _imageUrls.clear();
+  //   });
+  //   debugPrint('AddPropertyForm: Picked images: $_imagePaths');
+  // }
+
   Future<void> _pickImages() async {
-    final picker = ImagePicker();
-    final pickedFiles = await picker.pickMultiImage();
-    setState(() {
-      _imagePaths = pickedFiles.map((file) => file.path).toList();
-      _imageUrls.clear();
-    });
-    debugPrint('AddPropertyForm: Picked images: $_imagePaths');
+    final cameraStatus = await Permission.camera.request();
+    final storageStatus = await Permission.storage.request();
+
+    if (cameraStatus.isGranted && storageStatus.isGranted) {
+      final picker = ImagePicker();
+      final pickedFiles = await picker.pickMultiImage();
+      setState(() {
+        _imagePaths = pickedFiles.map((file) => file.path).toList();
+        _imageUrls.clear();
+      });
+      debugPrint('AddPropertyForm: Picked images: $_imagePaths');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Camera and storage permissions are required.')),
+      );
+    }
   }
 
   void _addImageUrl(String url) {
@@ -347,7 +370,10 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                        colors: [
+                          AppColors.primaryBlue,
+                          AppColors.secondaryTeal
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -363,15 +389,20 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
                           ? null
                           : () async {
                               if (_formKey.currentState!.validate()) {
-                                final totalUnits = int.parse(_totalUnitsController.text);
-                                final occupiedUnits = int.parse(_unitsOccupiedController.text);
+                                final totalUnits =
+                                    int.parse(_totalUnitsController.text);
+                                final occupiedUnits =
+                                    int.parse(_unitsOccupiedController.text);
                                 if (occupiedUnits > totalUnits) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Occupied units cannot exceed total units')),
+                                    const SnackBar(
+                                        content: Text(
+                                            'Occupied units cannot exceed total units')),
                                   );
                                   return;
                                 }
-                                debugPrint('AddPropertyForm: Submitting property: ${_nameController.text}');
+                                debugPrint(
+                                    'AddPropertyForm: Submitting property: ${_nameController.text}');
                                 await propertyProvider.createProperty(
                                   context: context,
                                   name: _nameController.text,
@@ -379,22 +410,31 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
                                   description: _descriptionController.text,
                                   totalUnits: totalUnits,
                                   occupiedUnits: occupiedUnits,
-                                  monthlyIncome: double.parse(_monthlyIncomeController.text),
+                                  monthlyIncome: double.parse(
+                                      _monthlyIncomeController.text),
                                   status: _status,
                                   amenities: _amenities,
-                                  imageUrls: _useLocalImages ? null : _imageUrls,
-                                  imagePaths: _useLocalImages ? _imagePaths : null,
+                                  imageUrls:
+                                      _useLocalImages ? null : _imageUrls,
+                                  imagePaths:
+                                      _useLocalImages ? _imagePaths : null,
                                 );
                                 if (propertyProvider.errorMessage == null) {
-                                  debugPrint('AddPropertyForm: Property added successfully');
+                                  debugPrint(
+                                      'AddPropertyForm: Property added successfully');
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Property added successfully')),
+                                    const SnackBar(
+                                        content: Text(
+                                            'Property added successfully')),
                                   );
                                   Navigator.pop(context);
                                 } else {
-                                  debugPrint('AddPropertyForm: Error: ${propertyProvider.errorMessage}');
+                                  debugPrint(
+                                      'AddPropertyForm: Error: ${propertyProvider.errorMessage}');
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(propertyProvider.errorMessage!)),
+                                    SnackBar(
+                                        content: Text(
+                                            propertyProvider.errorMessage!)),
                                   );
                                 }
                               }

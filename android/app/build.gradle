@@ -36,7 +36,7 @@ android {
         debug {
             keyAlias "androiddebugkey"
             keyPassword "android"
-            storeFile file("${rootProject.projectDir}/app/debug.keystore")
+            storeFile file("debug.keystore")
             storePassword "android"
         }
         release {
@@ -48,7 +48,7 @@ android {
             } else {
                 keyAlias "androiddebugkey"
                 keyPassword "android"
-                storeFile file("${rootProject.projectDir}/app/debug.keystore")
+                storeFile file("debug.keystore")
                 storePassword "android"
             }
         }

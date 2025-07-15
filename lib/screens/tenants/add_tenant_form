@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../models/tenant_model.dart'; // Changed from tenant.dart to tenant_model.dart
+import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
-import '../../constants/assets.dart';
+import '../../models/tenant.dart';
+import '../../providers/tenant_provider.dart';
+import '../../providers/property_provider.dart';
 
 class AddTenantForm extends StatefulWidget {
-  final void Function(Tenant) onTenantAdded;
-
-  const AddTenantForm({super.key, required this.onTenantAdded});
+  const AddTenantForm({super.key});
 
   @override
   State<AddTenantForm> createState() => _AddTenantFormState();
@@ -14,21 +14,61 @@ class AddTenantForm extends StatefulWidget {
 
 class _AddTenantFormState extends State<AddTenantForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _unitController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  String _status = 'Paid';
+  final TextEditingController _unitController = TextEditingController();
+  final TextEditingController _rentAmountController = TextEditingController();
+  final TextEditingController _securityDepositController = TextEditingController();
+  final TextEditingController _leaseStartDateController = TextEditingController();
+  final TextEditingController _leaseEndDateController = TextEditingController();
+  final TextEditingController _nextPaymentDueController = TextEditingController();
+  final TextEditingController _emergencyNameController = TextEditingController();
+  final TextEditingController _emergencyPhoneController = TextEditingController();
+  final TextEditingController _emergencyRelationshipController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+  String? _selectedPropertyId;
+  String _status = 'paid';
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _unitController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
+    _unitController.dispose();
+    _rentAmountController.dispose();
+    _securityDepositController.dispose();
+    _leaseStartDateController.dispose();
+    _leaseEndDateController.dispose();
+    _nextPaymentDueController.dispose();
+    _emergencyNameController.dispose();
+    _emergencyPhoneController.dispose();
+    _emergencyRelationshipController.dispose();
+    _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = picked.toIso8601String().split('T')[0];
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final propertyProvider = Provider.of<PropertyProvider>(context);
+    final tenantProvider = Provider.of<TenantProvider>(context);
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -36,134 +76,280 @@ class _AddTenantFormState extends State<AddTenantForm> {
         right: 16,
         top: 16,
       ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Add New Tenant',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Add New Tenant',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Full Name',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: InputDecoration(
+                  labelText: 'First Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                filled: true,
-                fillColor: AppColors.grey50,
+                validator: (value) => value!.isEmpty ? 'Please enter first name' : null,
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter tenant name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _unitController,
-              decoration: InputDecoration(
-                labelText: 'Unit Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                filled: true,
-                fillColor: AppColors.grey50,
+                validator: (value) => value!.isEmpty ? 'Please enter last name' : null,
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter unit number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: 'Phone Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                filled: true,
-                fillColor: AppColors.grey50,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => value!.isEmpty ? 'Please enter email' : null,
               ),
-              keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter phone number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _status,
-              decoration: InputDecoration(
-                labelText: 'Payment Status',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                filled: true,
-                fillColor: AppColors.grey50,
+                keyboardType: TextInputType.phone,
+                validator: (value) => value!.isEmpty ? 'Please enter phone number' : null,
               ),
-              items: ['Paid', 'Overdue', 'Due Soon']
-                  .map((status) => DropdownMenuItem(
-                        value: status,
-                        child: Text(status),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _status = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _selectedPropertyId,
+                decoration: InputDecoration(
+                  labelText: 'Property',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    final newTenant = Tenant(
-                      name: _nameController.text,
-                      unit: _unitController.text,
-                      phone: _phoneController.text,
-                      status: _status,
-                      image: Assets.tenant1,
-                    );
-                    widget.onTenantAdded(newTenant);
-                  }
+                items: propertyProvider.properties
+                    .map((property) => DropdownMenuItem(
+                          value: property.id,
+                          child: Text(property.name),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedPropertyId = value;
+                  });
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
+                validator: (value) => value == null ? 'Please select a property' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _unitController,
+                decoration: InputDecoration(
+                  labelText: 'Unit Number',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
                 ),
-                child: const Text(
-                  'Add Tenant',
-                  style: TextStyle(color: Colors.white),
+                validator: (value) => value!.isEmpty ? 'Please enter unit number' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _rentAmountController,
+                decoration: InputDecoration(
+                  labelText: 'Rent Amount',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter rent amount' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _securityDepositController,
+                decoration: InputDecoration(
+                  labelText: 'Security Deposit',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter security deposit' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _leaseStartDateController,
+                decoration: InputDecoration(
+                  labelText: 'Lease Start Date (YYYY-MM-DD)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                readOnly: true,
+                onTap: () => _selectDate(context, _leaseStartDateController),
+                validator: (value) => value!.isEmpty ? 'Please select lease start date' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _leaseEndDateController,
+                decoration: InputDecoration(
+                  labelText: 'Lease End Date (YYYY-MM-DD)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                readOnly: true,
+                onTap: () => _selectDate(context, _leaseEndDateController),
+                validator: (value) => value!.isEmpty ? 'Please select lease end date' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _nextPaymentDueController,
+                decoration: InputDecoration(
+                  labelText: 'Next Payment Due (YYYY-MM-DD)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                readOnly: true,
+                onTap: () => _selectDate(context, _nextPaymentDueController),
+                validator: (value) => value!.isEmpty ? 'Please select next payment due date' : null,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: InputDecoration(
+                  labelText: 'Payment Status',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                items: ['paid', 'overdue', 'pending']
+                    .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _status = value!;
+                  });
+                },
+                validator: (value) => value == null ? 'Please select a status' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emergencyNameController,
+                decoration: InputDecoration(
+                  labelText: 'Emergency Contact Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                validator: (value) => value!.isEmpty ? 'Please enter emergency contact name' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emergencyPhoneController,
+                decoration: InputDecoration(
+                  labelText: 'Emergency Contact Phone',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) => value!.isEmpty ? 'Please enter emergency contact phone' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emergencyRelationshipController,
+                decoration: InputDecoration(
+                  labelText: 'Emergency Contact Relationship',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                validator: (value) => value!.isEmpty ? 'Please enter relationship' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _notesController,
+                decoration: InputDecoration(
+                  labelText: 'Notes (Optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      final tenantData = {
+                        'firstName': _firstNameController.text,
+                        'lastName': _lastNameController.text,
+                        'email': _emailController.text,
+                        'phone': _phoneController.text,
+                        'unit': _unitController.text,
+                        'property': _selectedPropertyId,
+                        'rentAmount': double.parse(_rentAmountController.text),
+                        'securityDeposit': double.parse(_securityDepositController.text),
+                        'leaseStartDate': _leaseStartDateController.text,
+                        'leaseEndDate': _leaseEndDateController.text,
+                        'nextPaymentDue': _nextPaymentDueController.text,
+                        'status': _status,
+                        'emergencyContact': {
+                          'name': _emergencyNameController.text,
+                          'phone': _emergencyPhoneController.text,
+                          'relationship': _emergencyRelationshipController.text,
+                        },
+                        'notes': _notesController.text.isEmpty ? null : _notesController.text,
+                      };
+                      await tenantProvider.createTenant(context, tenantData);
+                      if (tenantProvider.state == TenantState.error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(tenantProvider.errorMessage ?? 'Failed to add tenant')),
+                        );
+                      } else {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Tenant added successfully')),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Add Tenant', style: TextStyle(color: Colors.white)),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -173,13 +359,14 @@ class _AddTenantFormState extends State<AddTenantForm> {
 
 
 
+
 // import 'package:flutter/material.dart';
-// import '../../models/tenant.dart';
+// import '../../models/tenant_model.dart'; // Changed from tenant.dart to tenant_model.dart
 // import '../../constants/colors.dart';
-// import '../../constants/assets.dart'; // Add this import
+// import '../../constants/assets.dart';
 
 // class AddTenantForm extends StatefulWidget {
-//   final Function(Tenant) onTenantAdded;
+//   final void Function(Tenant) onTenantAdded;
 
 //   const AddTenantForm({super.key, required this.onTenantAdded});
 
@@ -338,7 +525,7 @@ class _AddTenantFormState extends State<AddTenantForm> {
 //                 ),
 //               ),
 //             ),
-//           ], // This closing bracket was missing
+//           ],
 //         ),
 //       ),
 //     );

@@ -304,41 +304,40 @@ class _AddTenantFormState extends State<AddTenantForm> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final tenantData = {
-                        'firstName': _firstNameController.text,
-                        'lastName': _lastNameController.text,
-                        'email': _emailController.text,
-                        'phone': _phoneController.text,
-                        'unit': _unitController.text,
-                        'property': _selectedPropertyId,
-                        'rentAmount': double.parse(_rentAmountController.text),
-                        'securityDeposit': double.parse(_securityDepositController.text),
-                        'leaseStartDate': _leaseStartDateController.text,
-                        'leaseEndDate': _leaseEndDateController.text,
-                        'nextPaymentDue': _nextPaymentDueController.text,
-                        'status': _status,
-                        'emergencyContact': {
-                          'name': _emergencyNameController.text,
-                          'phone': _emergencyPhoneController.text,
-                          'relationship': _emergencyRelationshipController.text,
-                        },
-                        'notes': _notesController.text.isEmpty ? null : _notesController.text,
-                      };
-                      await tenantProvider.createTenant(context, tenantData);
-                      if (tenantProvider.state == TenantState.error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tenantProvider.errorMessage ?? 'Failed to add tenant')),
-                        );
-                      } else {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Tenant added successfully')),
-                        );
-                      }
+                 onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    final tenantData = {
+                      'firstName': _firstNameController.text,
+                      'lastName': _lastNameController.text,
+                      'email': _emailController.text,
+                      'phone': _phoneController.text,
+                      'unit': _unitController.text,
+                      'property': _selectedPropertyId,
+                      'rentAmount': double.parse(_rentAmountController.text),
+                      'securityDeposit': double.parse(_securityDepositController.text),
+                      'leaseStartDate': _leaseStartDateController.text,
+                      'leaseEndDate': _leaseEndDateController.text,
+                      'nextPaymentDue': _nextPaymentDueController.text,
+                      'emergencyContact': {
+                        'name': _emergencyNameController.text,
+                        'phone': _emergencyPhoneController.text,
+                        'relationship': _emergencyRelationshipController.text,
+                      },
+                      'notes': _notesController.text.isEmpty ? null : _notesController.text,
+                    };
+                    await tenantProvider.createTenant(context, tenantData);
+                    if (tenantProvider.state == TenantState.error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(tenantProvider.errorMessage ?? 'Failed to add tenant')),
+                      );
+                    } else {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Tenant added successfully')),
+                      );
                     }
-                  },
+                  }
+                },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,

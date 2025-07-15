@@ -128,30 +128,33 @@ class TenantService {
     }
   }
 
-  Future<Tenant> createTenant(String token, Map<String, dynamic> tenantData) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.tenants),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode(tenantData),
-      );
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          return Tenant.fromJson(data['data']['tenant']);
-        } else {
-          throw Exception(data['message'] ?? 'Failed to create tenant');
-        }
+Future<Tenant> createTenant(String token, Map<String, dynamic> tenantData) async {
+  try {
+    final uri = Uri.parse(ApiEndpoints.tenants);
+    print('Creating tenant at URI: $uri'); // Debugging
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode(tenantData),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        return Tenant.fromJson(data['data']['tenant']);
       } else {
-        throw Exception('Server error: ${response.statusCode}');
+        throw Exception(data['message'] ?? 'Failed to create tenant');
       }
-    } catch (error) {
-      throw Exception('Failed to create tenant: $error');
+    } else {
+      print('Server error: ${response.statusCode} - ${response.body}');
+      throw Exception('Server error: ${response.statusCode} - ${response.body}');
     }
+  } catch (error) {
+    throw Exception('Failed to create tenant: $error');
   }
+}
 
   Future<Tenant> updateTenant(String token, String tenantId, Map<String, dynamic> tenantData) async {
     try {

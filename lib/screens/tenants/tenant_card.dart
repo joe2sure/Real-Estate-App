@@ -1,3 +1,4 @@
+import 'package:Peeman/models/tenant_model.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/tenant.dart';

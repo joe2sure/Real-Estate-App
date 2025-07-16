@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../models/property_model.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/property_provider.dart';
 import '../../widgets/fab.dart';
@@ -92,9 +93,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                 ),
               ),
               Expanded(
-                child: propertyProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : propertyProvider.errorMessage != null
+                child:  propertyProvider.errorMessage != null
                         ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -112,9 +111,12 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                             ),
                           )
                         : SingleChildScrollView(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: PropertyCard(properties: propertyProvider.properties),
+                            child:Skeletonizer (
+                              enabled: propertyProvider.isLoading,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: PropertyCard(properties: propertyProvider.properties),
+                              ),
                             ),
                           ),
               ),

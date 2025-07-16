@@ -1,6 +1,7 @@
 import 'package:Peeman/screens/dashboard/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
 import '../../providers/auth_provider.dart';
@@ -19,16 +20,12 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.currentUser;
-    final isAdmin = user?.role == 'admin';
 
     return ChangeNotifierProvider(
       create: (context) => DashboardProvider()..fetchDashboardData(context),
       child: Scaffold(
         body: Consumer<DashboardProvider>(
           builder: (context, dashboardProvider, child) {
-            if (dashboardProvider.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
             if (dashboardProvider.errorMessage != null) {
               return Center(
                 child: Column(
@@ -40,98 +37,105 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => dashboardProvider.fetchDashboardData(context),
+                      onPressed: () =>
+                          dashboardProvider.fetchDashboardData(context),
                       child: const Text('Retry'),
                     ),
                   ],
                 ),
               );
             }
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-                      color: AppColors.white,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              CustomAvatar(
-                                imageUrl: Assets.user,
-                                fallbackText: 'JD',
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Welcome, ${user?.firstName ?? "Guest"}!',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Stack(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.notifications),
-                                color: AppColors.grey600,
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const NotificationScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.red500,
-                                    shape: BoxShape.circle,
+
+            return Skeletonizer(
+              enabled: dashboardProvider.isLoading,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+                    color: AppColors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CustomAvatar(
+                              imageUrl: Assets.user,
+                              fallbackText: 'JD',
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome, ${user?.firstName ?? "Guest"}!',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Stack(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.notifications),
+                              color: AppColors.grey600,
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NotificationScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: AppColors.red500,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              StatsCard(stats: dashboardProvider.stats),
-                              const SizedBox(height: 24),
-                              RevenueChart(monthlyRevenue: dashboardProvider.monthlyRevenue),
-                              const SizedBox(height: 24),
-                              const DueRentCard(),
-                              const SizedBox(height: 24),
-                              RecentActivityCard(
-                                recentPayments: dashboardProvider.recentPayments,
-                                recentTenants: dashboardProvider.recentTenants,
-                              ),
-                            ],
-                          ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            StatsCard(stats: dashboardProvider.stats),
+                            const SizedBox(height: 24),
+                            RevenueChart(
+                              monthlyRevenue:
+                                  dashboardProvider.monthlyRevenue,
+                            ),
+                            const SizedBox(height: 24),
+                            const DueRentCard(),
+                            const SizedBox(height: 24),
+                            RecentActivityCard(
+                              recentPayments:
+                                  dashboardProvider.recentPayments,
+                              recentTenants:
+                                  dashboardProvider.recentTenants,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -139,6 +143,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
+
 
 
 

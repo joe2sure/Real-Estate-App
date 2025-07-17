@@ -233,6 +233,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                   child: _isEditing
                       ? Form(
                           key: _formKey,
+
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -447,49 +448,71 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Name: ${_tenant!.firstName} ${_tenant!.lastName}',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 8),
-                            Text('Email: ${_tenant!.email}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Phone: ${_tenant!.phone}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Property: ${_tenant!.property.name}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Unit: ${_tenant!.unit}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Rent Amount: \$${(_tenant!.rentAmount).toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Security Deposit: \$${(_tenant!.securityDeposit).toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Lease Start: ${DateFormat('MMMM d, yyyy').format(_tenant!.leaseStartDate)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Lease End: ${DateFormat('MMMM d, yyyy').format(_tenant!.leaseEndDate)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Next Payment Due: ${DateFormat('MMMM d, yyyy').format(_tenant!.nextPaymentDue)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Status: ${_tenant!.status}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Active: ${_tenant!.isActive ? 'Yes' : 'No'}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Contact: ${_tenant!.emergencyContact.name}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Phone: ${_tenant!.emergencyContact.phone}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Relationship: ${_tenant!.emergencyContact.relationship}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Notes: ${_tenant!.notes ?? 'None'}', style: const TextStyle(fontSize: 14)),
+                            Column(
+                              children: [
+                                // Profile Image
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: Colors.grey[300],
+                                  child: Text("${_tenant!.firstName[0]}",style: TextStyle(fontSize: 36)),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Name
+                                 Text(
+                                  '${_tenant!.firstName} ${_tenant!.lastName}',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // Basic Info
+                                _infoRow(label: 'Phone', value: '${_tenant!.phone}'),
+                                _infoRow(label: 'Email', value: '${_tenant!.email}'),
+                                _infoRow(label: 'Email', value: _tenant!.email),
+                                _infoRow(label: 'Property', value: _tenant!.property.name),
+                                _infoRow(label: 'Unit', value: _tenant!.unit),
+                                _infoRow(label: 'Rent Amount', value: '\$${_tenant!.rentAmount.toStringAsFixed(2)}'),
+                                _infoRow(label: 'Security Deposit', value: '\$${_tenant!.securityDeposit.toStringAsFixed(2)}'),
+                                _infoRow(label: 'Lease Start', value: DateFormat('MMMM d, yyyy').format(_tenant!.leaseStartDate)),
+                                _infoRow(label: 'Lease End', value: DateFormat('MMMM d, yyyy').format(_tenant!.leaseEndDate)),
+                                _infoRow(label: 'Next Payment Due', value: DateFormat('MMMM d, yyyy').format(_tenant!.nextPaymentDue)),
+                                _infoRow(label: 'Status', value: _tenant!.status),
+                                _infoRow(label: 'Active', value: _tenant!.isActive ? 'Yes' : 'No'),
+
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Emergency Contact',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                _infoRow(label: 'Name', value: _tenant!.emergencyContact.name),
+                                _infoRow(label: 'Phone', value: _tenant!.emergencyContact.phone),
+                                _infoRow(label: 'Relationship', value: _tenant!.emergencyContact.relationship),
+
+                                const SizedBox(height: 20),
+                                const Divider(color: Colors.black),
+                                _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
+
+                                const Divider(height: 40, color: Colors.black),
+
+                                // Apartment Info
+                                const SizedBox(height: 30),
+
+                                // Actions
+
+                              ],
+                            ),
+
                             if (isAdmin) ...[
                               const SizedBox(height: 16),
                               const Text('Send Payment Reminder',
@@ -550,5 +573,48 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     _notesController.dispose();
     _reminderController.dispose();
     super.dispose();
+  }
+  Widget _infoRow({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.black87),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionButton(IconData icon, String label) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+            shape: BoxShape.circle,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Icon(icon, color: Colors.white),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.black),
+        )
+      ],
+    );
   }
 }

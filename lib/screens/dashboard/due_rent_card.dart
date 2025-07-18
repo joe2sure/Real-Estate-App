@@ -1,44 +1,37 @@
+import 'package:Peeman/models/tenant.dart';
+import 'package:Peeman/screens/dashboard/view_all_rent.dart';
+import 'package:Peeman/screens/tenants/tenant_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
+import '../../providers/tenant_provider.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 
-class DueRentCard extends StatelessWidget {
+class DueRentCard extends StatefulWidget {
   const DueRentCard({super.key});
 
   @override
+  State<DueRentCard> createState() => _DueRentCardState();
+}
+
+class _DueRentCardState extends State<DueRentCard> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TenantProvider>(context, listen: false).loadTenants(context);
+    });
+  }
+  @override
   Widget build(BuildContext context) {
-    final dueRents = [
-      {
-        'name': 'Emma Mitchell',
-        'unit': 'Unit 3A, Parkview',
-        'amount': 1250.0,
-        'status': 'Due in 2 days',
-        'image': Assets.tenant1,
-        'badgeColor': AppColors.amber100,
-        'textColor': AppColors.amber500,
-      },
-      {
-        'name': 'Robert Johnson',
-        'unit': 'Unit 5B, The Heights',
-        'amount': 950.0,
-        'status': '3 days overdue',
-        'image': Assets.tenant2,
-        'badgeColor': AppColors.red100,
-        'textColor': AppColors.red500,
-      },
-      {
-        'name': 'Daniel Thompson',
-        'unit': 'Unit 2C, Riverside',
-        'amount': 1450.0,
-        'status': 'Due tomorrow',
-        'image': Assets.tenant3,
-        'badgeColor': AppColors.amber100,
-        'textColor': AppColors.amber500,
-      },
-    ];
+    final tenantProvider = Provider.of<TenantProvider>(context);
+    List<Tenant> tenants = tenantProvider.tenants
+        .where((tenant) => tenant.status == 'overdue')
+        .toList();
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +47,16 @@ class DueRentCard extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: ()  {
+            Navigator.push(
+                 context,
+              MaterialPageRoute(
+              builder: (context) => ViewAllRent(
+              tenants: tenants
+            ),
+              ),
+                );
+    },
               child: Text(
                 'View All',
                 style: TextStyle(color: AppColors.primaryBlue),
@@ -66,67 +68,77 @@ class DueRentCard extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: dueRents.map((rent) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: CustomCard(
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.asset(
-                                rent['image'] as String,
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.cover,
+            children: tenants.map((rent) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TenantDetailScreen(
+                          tenantId: rent.id
+                      ),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: CustomCard(
+                    child: Container(
+                      width: 200,
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.blue[50],
+                                radius: 32,
+                                child: Text("${rent.firstName[0]} ",style: TextStyle(fontSize: 36)),
+
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  rent['name'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                   "${rent.firstName} ${rent.lastName}" ,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  rent['unit'] as String,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.grey500,
+                                  Text(
+                                    "${rent.unit}, ${shorten(rent.property.address)} ",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.grey500,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '\$${rent['amount']}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                                ],
                               ),
-                            ),
-                            CustomBadge(
-                              text: rent['status'] as String,
-                              backgroundColor: rent['badgeColor'] as Color,
-                              textColor: rent['textColor'] as Color,
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '\$${rent.rentAmount}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              CustomBadge(
+                                text: rent.status,
+                                backgroundColor: AppColors.amber100,
+                                textColor: AppColors.amber500,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -136,5 +148,8 @@ class DueRentCard extends StatelessWidget {
         ),
       ],
     );
+  }
+  String shorten(String text, [int maxLength = 7]) {
+    return text.length > maxLength ? '${text.substring(0, maxLength)}...' : text;
   }
 }

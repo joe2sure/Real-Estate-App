@@ -21,6 +21,7 @@ class DashboardScreen extends StatelessWidget {
     final user = authProvider.currentUser;
     final isAdmin = user?.role == 'admin';
 
+
     return ChangeNotifierProvider(
       create: (context) => DashboardProvider()..fetchDashboardData(context),
       child: Scaffold(

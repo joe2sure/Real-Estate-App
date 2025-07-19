@@ -1,8 +1,9 @@
 import 'package:hive/hive.dart';
+import '../hive/type_ids.dart';
 
 part 'user_model.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: HiveTypeIds.user)
 class User extends HiveObject {
   @HiveField(0)
   final String id;
@@ -80,11 +81,11 @@ class User extends HiveObject {
 
 //   factory User.fromJson(Map<String, dynamic> json) {
 //     return User(
-//       id: json['id'],
-//       firstName: json['firstName'],
-//       lastName: json['lastName'],
-//       email: json['email'],
-//       role: json['role'],
+//       id: json['id'] as String,
+//       firstName: json['firstName'] as String,
+//       lastName: json['lastName'] as String,
+//       email: json['email'] as String,
+//       role: json['role'] as String,
 //     );
 //   }
 

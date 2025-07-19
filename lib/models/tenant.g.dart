@@ -8,7 +8,7 @@ part of 'tenant.dart';
 
 class PropertyAdapter extends TypeAdapter<Property> {
   @override
-  final int typeId = 1;
+  final int typeId = 10;
 
   @override
   Property read(BinaryReader reader) {
@@ -48,7 +48,7 @@ class PropertyAdapter extends TypeAdapter<Property> {
 
 class EmergencyContactAdapter extends TypeAdapter<EmergencyContact> {
   @override
-  final int typeId = 2;
+  final int typeId = 11;
 
   @override
   EmergencyContact read(BinaryReader reader) {
@@ -88,7 +88,7 @@ class EmergencyContactAdapter extends TypeAdapter<EmergencyContact> {
 
 class TenantAdapter extends TypeAdapter<Tenant> {
   @override
-  final int typeId = 3;
+  final int typeId = 12;
 
   @override
   Tenant read(BinaryReader reader) {

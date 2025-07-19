@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/tenant_provider.dart';
 import 'providers/property_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/payment_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/auth/auth_screen.dart';
@@ -15,17 +16,15 @@ import 'screens/tenants/tenants_screen.dart';
 import 'screens/payments/payment_screen.dart';
 import 'screens/more/more_screen.dart';
 import 'widgets/bottom_navigation.dart';
-import 'models/tenant.dart';
-import 'models/user_model.dart';
+import 'hive/hive_registry.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(UserAdapter());
-  Hive.registerAdapter(TenantAdapter());
-  Hive.registerAdapter(PropertyAdapter());
-  Hive.registerAdapter(EmergencyContactAdapter());
-
+  
+  // Single line registration with built-in conflict prevention
+  HiveRegistry.registerAllAdapters();
+  
   runApp(
     MultiProvider(
       providers: [
@@ -34,6 +33,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => TenantProvider()),
         ChangeNotifierProvider(create: (context) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => PropertyProvider()),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
       child: const MyApp(),
     ),
@@ -96,7 +96,6 @@ class MainScreen extends StatelessWidget {
       builder: (context, appState, authProvider, child) {
         Widget content;
         bool showBottomNav = false;
-
         if (appState.onboardingStep >= 0 && appState.onboardingStep < 3) {
           content = const OnboardingScreen();
         } else if (appState.onboardingStep == -1 && !authProvider.isLoggedIn) {
@@ -130,15 +129,13 @@ class MainScreen extends StatelessWidget {
 }
 
 
-
-
-// import 'package:Peeman/providers/property_provider.dart';
-// import 'package:Peeman/providers/tenant_provider.dart';
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 // import 'package:hive_flutter/hive_flutter.dart';
 // import 'providers/app_state.dart';
 // import 'providers/auth_provider.dart';
+// import 'providers/tenant_provider.dart';
+// import 'providers/property_provider.dart';
 // import 'providers/dashboard_provider.dart';
 // import 'screens/splash_screen.dart';
 // import 'screens/onboarding_screen.dart';
@@ -149,17 +146,22 @@ class MainScreen extends StatelessWidget {
 // import 'screens/payments/payment_screen.dart';
 // import 'screens/more/more_screen.dart';
 // import 'widgets/bottom_navigation.dart';
+// import 'models/tenant.dart';
+// import 'models/user_model.dart';
 
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
 //   await Hive.initFlutter();
+//   Hive.registerAdapter(UserAdapter());
+//   Hive.registerAdapter(TenantAdapter());
+//   Hive.registerAdapter(PropertyAdapter());
+//   Hive.registerAdapter(EmergencyContactAdapter());
 
 //   runApp(
 //     MultiProvider(
 //       providers: [
 //         ChangeNotifierProvider(create: (context) => AppState()),
 //         ChangeNotifierProvider(create: (context) => AuthProvider()..init()),
-
 //         ChangeNotifierProvider(create: (context) => TenantProvider()),
 //         ChangeNotifierProvider(create: (context) => DashboardProvider()),
 //         ChangeNotifierProvider(create: (_) => PropertyProvider()),

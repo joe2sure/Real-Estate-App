@@ -126,48 +126,94 @@ class PaymentProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> recordPayment(String token, {
-    required String tenantId,
-    required String propertyId,
-    required double amount,
-    required String method,
-    required String paymentDate,
-    String? notes,
-    double lateFee = 0.0,
-    double discount = 0.0,
-    String status = 'completed',
-  }) async {
-    _setState(PaymentState.loading);
+  // Future<bool> recordPayment(String token, {
+  //   required String tenantId,
+  //   required String propertyId,
+  //   required double amount,
+  //   required String method,
+  //   required String paymentDate,
+  //   String? notes,
+  //   double lateFee = 0.0,
+  //   double discount = 0.0,
+  //   String status = 'completed',
+  // }) async {
+  //   _setState(PaymentState.loading);
 
-    try {
-      final paymentData = {
-        'tenant': tenantId,
-        'property': propertyId,
-        'amount': amount,
-        'method': method,
-        'paymentDate': paymentDate,
-        'notes': notes,
-        'lateFee': lateFee,
-        'discount': discount,
-        'status': status,
-      };
+  //   try {
+  //     final paymentData = {
+  //       'tenant': tenantId,
+  //       'property': propertyId,
+  //       'amount': amount,
+  //       'method': method,
+  //       'paymentDate': paymentDate,
+  //       'notes': notes,
+  //       'lateFee': lateFee,
+  //       'discount': discount,
+  //       'status': status,
+  //     };
 
-      final newPayment = await PaymentService.recordPayment(token, paymentData);
-      _payments.insert(0, newPayment);
-      _recentPayments.insert(0, newPayment);
+  //     final newPayment = await PaymentService.recordPayment(token, paymentData);
+  //     _payments.insert(0, newPayment);
+  //     _recentPayments.insert(0, newPayment);
       
-      // Keep only the latest 10 recent payments
-      if (_recentPayments.length > 10) {
-        _recentPayments = _recentPayments.take(10).toList();
-      }
+  //     // Keep only the latest 10 recent payments
+  //     if (_recentPayments.length > 10) {
+  //       _recentPayments = _recentPayments.take(10).toList();
+  //     }
 
-      _setState(PaymentState.idle);
-      return true;
-    } catch (e) {
-      _setError(e.toString());
-      return false;
+  //     _setState(PaymentState.idle);
+  //     return true;
+  //   } catch (e) {
+  //     _setError(e.toString());
+  //     return false;
+  //   }
+  // }
+
+
+Future<bool> recordPayment(String token, {
+  required String tenantId,
+  required String propertyId,
+  required double amount,
+  required String method,
+  required String paymentDate,
+  String? notes,
+  double lateFee = 0.0,
+  double discount = 0.0,
+  String status = 'completed',
+}) async {
+  _setState(PaymentState.loading);
+
+  try {
+    final paymentData = {
+      'tenant': tenantId,
+      'property': propertyId,
+      'amount': amount,
+      'method': method,
+      'paymentDate': paymentDate,
+      'notes': notes,
+      'lateFee': lateFee,
+      'discount': discount,
+      'status': status,
+    };
+
+    debugPrint('Recording payment with data: $paymentData');
+    
+    final newPayment = await PaymentService.recordPayment(token, paymentData);
+    _payments.insert(0, newPayment);
+    _recentPayments.insert(0, newPayment);
+    
+    if (_recentPayments.length > 10) {
+      _recentPayments = _recentPayments.take(10).toList();
     }
+
+    _setState(PaymentState.idle);
+    return true;
+  } catch (e) {
+    debugPrint('Error recording payment: ${e.toString()}');
+    _setError(e.toString());
+    return false;
   }
+}
 
   Future<bool> updatePayment(String token, String paymentId, {
     String? tenantId,

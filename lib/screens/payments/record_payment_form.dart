@@ -85,27 +85,73 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
     }
   }
 
-  void _handleSubmit() async {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedTenantId == null || _selectedPropertyId == null) {
-        Fluttertoast.showToast(
-          msg: 'Please select tenant and property',
-          backgroundColor: AppColors.red500,
-          textColor: AppColors.white,
-        );
-        return;
-      }
+  // void _handleSubmit() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     if (_selectedTenantId == null || _selectedPropertyId == null) {
+  //       Fluttertoast.showToast(
+  //         msg: 'Please select tenant and property',
+  //         backgroundColor: AppColors.red500,
+  //         textColor: AppColors.white,
+  //       );
+  //       return;
+  //     }
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //     final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
 
+  //     final success = await paymentProvider.recordPayment(
+  //       authProvider.token!,
+  //       tenantId: _selectedTenantId!,
+  //       propertyId: _selectedPropertyId!,
+  //       amount: double.parse(_amountController.text),
+  //       method: _selectedMethod,
+  //       paymentDate: _selectedDate.toIso8601String(),
+  //       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+  //       lateFee: double.tryParse(_lateFeeController.text) ?? 0.0,
+  //       discount: double.tryParse(_discountController.text) ?? 0.0,
+  //       status: _selectedStatus,
+  //     );
+
+  //     if (success) {
+  //       Fluttertoast.showToast(
+  //         msg: 'Payment recorded successfully',
+  //         backgroundColor: AppColors.secondaryTeal,
+  //         textColor: AppColors.white,
+  //       );
+  //       Navigator.of(context).pop();
+  //     } else {
+  //       Fluttertoast.showToast(
+  //         msg: paymentProvider.errorMessage ?? 'Failed to record payment',
+  //         backgroundColor: AppColors.red500,
+  //         textColor: AppColors.white,
+  //       );
+  //     }
+  //   }
+  // }
+
+
+void _handleSubmit() async {
+  if (_formKey.currentState!.validate()) {
+    if (_selectedTenantId == null || _selectedPropertyId == null) {
+      Fluttertoast.showToast(
+        msg: 'Please select tenant and property',
+        backgroundColor: AppColors.red500,
+        textColor: AppColors.white,
+      );
+      return;
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+
+    try {
       final success = await paymentProvider.recordPayment(
         authProvider.token!,
         tenantId: _selectedTenantId!,
         propertyId: _selectedPropertyId!,
         amount: double.parse(_amountController.text),
         method: _selectedMethod,
-        paymentDate: _selectedDate.toIso8601String(),
+        paymentDate: _selectedDate.toIso8601String().split('T')[0], // Send just the date
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
         lateFee: double.tryParse(_lateFeeController.text) ?? 0.0,
         discount: double.tryParse(_discountController.text) ?? 0.0,
@@ -126,8 +172,15 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
           textColor: AppColors.white,
         );
       }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Error: ${e.toString()}',
+        backgroundColor: AppColors.red500,
+        textColor: AppColors.white,
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

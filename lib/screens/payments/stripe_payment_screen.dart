@@ -81,67 +81,129 @@ class _StripePaymentScreenState extends State<StripePaymentScreen> {
     );
   }
 
-  void _processPayment() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isProcessing = true;
-      });
+  // void _processPayment() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     setState(() {
+  //       _isProcessing = true;
+  //     });
 
-      try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+  //     try {
+  //       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //       final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
 
-        // Create payment intent
-        final paymentIntent = await paymentProvider.createPaymentIntent(
+  //       // Create payment intent
+  //       final paymentIntent = await paymentProvider.createPaymentIntent(
+  //         authProvider.token!,
+  //         amount: widget.amount,
+  //         tenantId: widget.tenantId,
+  //         propertyId: widget.propertyId,
+  //       );
+
+  //       if (paymentIntent != null) {
+  //         // In a real implementation, you would use the Stripe SDK here
+  //         // For now, we'll simulate a successful payment
+  //         await Future.delayed(const Duration(seconds: 2));
+
+  //         // Record the payment as completed
+  //         final success = await paymentProvider.recordPayment(
+  //           authProvider.token!,
+  //           tenantId: widget.tenantId,
+  //           propertyId: widget.propertyId,
+  //           amount: widget.amount,
+  //           method: 'credit_card',
+  //           paymentDate: DateTime.now().toIso8601String(),
+  //           status: 'completed',
+  //           notes: 'Payment processed via Stripe',
+  //         );
+
+  //         if (success) {
+  //           Fluttertoast.showToast(
+  //             msg: 'Payment successful!',
+  //             backgroundColor: AppColors.secondaryTeal,
+  //             textColor: AppColors.white,
+  //           );
+  //           Navigator.of(context).popUntil((route) => route.isFirst);
+  //         } else {
+  //           throw Exception('Failed to record payment');
+  //         }
+  //       } else {
+  //         throw Exception('Failed to create payment intent');
+  //       }
+  //     } catch (e) {
+  //       Fluttertoast.showToast(
+  //         msg: 'Payment failed: ${e.toString()}',
+  //         backgroundColor: AppColors.red500,
+  //         textColor: AppColors.white,
+  //       );
+  //     } finally {
+  //       setState(() {
+  //         _isProcessing = false;
+  //       });
+  //     }
+  //   }
+  // }
+
+void _processPayment() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+
+      // Create payment intent
+      final paymentIntent = await paymentProvider.createPaymentIntent(
+        authProvider.token!,
+        amount: widget.amount,
+        tenantId: widget.tenantId,
+        propertyId: widget.propertyId,
+      );
+
+      if (paymentIntent != null) {
+        // Simulate successful payment processing
+        await Future.delayed(const Duration(seconds: 2));
+
+        // Record the payment
+        final success = await paymentProvider.recordPayment(
           authProvider.token!,
-          amount: widget.amount,
           tenantId: widget.tenantId,
           propertyId: widget.propertyId,
+          amount: widget.amount,
+          method: 'credit_card',
+          paymentDate: DateTime.now().toIso8601String().split('T')[0],
+          status: 'completed',
+          notes: 'Payment processed via Stripe',
         );
 
-        if (paymentIntent != null) {
-          // In a real implementation, you would use the Stripe SDK here
-          // For now, we'll simulate a successful payment
-          await Future.delayed(const Duration(seconds: 2));
-
-          // Record the payment as completed
-          final success = await paymentProvider.recordPayment(
-            authProvider.token!,
-            tenantId: widget.tenantId,
-            propertyId: widget.propertyId,
-            amount: widget.amount,
-            method: 'credit_card',
-            paymentDate: DateTime.now().toIso8601String(),
-            status: 'completed',
-            notes: 'Payment processed via Stripe',
+        if (success) {
+          Fluttertoast.showToast(
+            msg: 'Payment successful!',
+            backgroundColor: AppColors.secondaryTeal,
+            textColor: AppColors.white,
           );
-
-          if (success) {
-            Fluttertoast.showToast(
-              msg: 'Payment successful!',
-              backgroundColor: AppColors.secondaryTeal,
-              textColor: AppColors.white,
-            );
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else {
-            throw Exception('Failed to record payment');
-          }
+          Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
-          throw Exception('Failed to create payment intent');
+          throw Exception(paymentProvider.errorMessage ?? 'Failed to record payment');
         }
-      } catch (e) {
-        Fluttertoast.showToast(
-          msg: 'Payment failed: ${e.toString()}',
-          backgroundColor: AppColors.red500,
-          textColor: AppColors.white,
-        );
-      } finally {
-        setState(() {
-          _isProcessing = false;
-        });
+      } else {
+        throw Exception('Failed to create payment intent');
       }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Payment failed: ${e.toString()}',
+        backgroundColor: AppColors.red500,
+        textColor: AppColors.white,
+      );
+    } finally {
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

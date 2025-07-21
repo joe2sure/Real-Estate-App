@@ -1,3 +1,4 @@
+import 'package:Peeman/screens/dashboard/view-all_recent_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -123,7 +124,16 @@ class RecentActivityCard extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AllRecentActivityScreen(
+                            recentPayments: recentPayments,
+                            recentTenants: recentTenants,
+                          ),
+                        ),
+                      );
+                    },
                     child: Text(
                       'View All',
                       style: TextStyle(color: AppColors.primaryBlue),

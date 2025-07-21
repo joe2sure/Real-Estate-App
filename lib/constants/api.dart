@@ -9,6 +9,7 @@ class ApiEndpoints {
   static const String paymentsRecent = '$baseUrl/payments/recent';
   static const String paymentsSummary = '$baseUrl/payments/summary';
   static const String paymentsCreateIntent = '$baseUrl/payments/create-intent';
+   static const String overdue = "$baseUrl/dashboard/due-rents";
 }
 
 
@@ -22,4 +23,4 @@ class ApiEndpoints {
 //   static const String properties = '$baseUrl/properties';
 //   static const String tenants = '$baseUrl/tenants';
 //   static const String overdue = "$baseUrl/dashboard/due-rents";
-}
+// }

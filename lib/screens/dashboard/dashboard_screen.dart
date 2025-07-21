@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/due_rent_provider.dart';
 import 'package:Peeman/screens/dashboard/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,13 +21,17 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.currentUser;
+    final isAdmin = user?.role == 'admin';
 
-
-    return ChangeNotifierProvider(
-      create: (context) => DashboardProvider()..fetchDashboardData(context),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DashboardProvider()..fetchDashboardData(context)),
+        ChangeNotifierProvider(create: (_) => DueRentProvider()..loadTenants(context: context)),
+      ],
       child: Scaffold(
         body: Consumer<DashboardProvider>(
           builder: (context, dashboardProvider, child) {
+
             if (dashboardProvider.errorMessage != null) {
               return Center(
                 child: Column(
@@ -46,6 +51,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
               );
             }
+
 
             return Skeletonizer(
               enabled: dashboardProvider.isLoading,
@@ -142,8 +148,7 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
+  }}
 
 
 

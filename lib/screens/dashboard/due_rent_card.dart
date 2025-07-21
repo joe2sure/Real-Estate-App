@@ -29,6 +29,7 @@ class _DueRentCardState extends State<DueRentCard> {
   Widget build(BuildContext context) {
     final duerentprovider = Provider.of<DueRentProvider>(context);
 
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -66,14 +67,10 @@ class _DueRentCardState extends State<DueRentCard> {
                       children: [
                         Row(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.asset(
-                                "SS",
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.cover,
-                              ),
+                            CustomAvatar(
+                              imageUrl: '${rent.firstName[0]}${rent.lastName[0]}',
+                              size: 48,
+                              fallbackText: '${rent.firstName[0]}${rent.lastName[0]}',
                             ),
                             const SizedBox(width: 8),
                             Column(

@@ -30,6 +30,7 @@ class DashboardScreen extends StatelessWidget {
       child: Scaffold(
         body: Consumer<DashboardProvider>(
           builder: (context, dashboardProvider, child) {
+            print(DueRentProvider().tenants);
             if (dashboardProvider.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }

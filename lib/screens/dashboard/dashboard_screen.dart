@@ -21,6 +21,7 @@ class DashboardScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.currentUser;
 
+
     return ChangeNotifierProvider(
       create: (context) => DashboardProvider()..fetchDashboardData(context),
       child: Scaffold(

@@ -1,15 +1,31 @@
+import 'package:Peeman/providers/due_rent_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/assets.dart';
 import '../../constants/colors.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 
-class DueRentCard extends StatelessWidget {
+class DueRentCard extends StatefulWidget {
   const DueRentCard({super.key});
 
   @override
+  State<DueRentCard> createState() => _DueRentCardState();
+}
+
+class _DueRentCardState extends State<DueRentCard> {
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint('PropertiesScreen: Initializing fetchProperties');
+      Provider.of<DueRentProvider>(context, listen: false).loadTenants(context: context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final duerentprovider = Provider.of<DueRentProvider>(context);
     final dueRents = [
       {
         'name': 'Emma Mitchell',
@@ -66,7 +82,7 @@ class DueRentCard extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: dueRents.map((rent) {
+            children: duerentprovider.tenants.map((rent) {
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: CustomCard(
@@ -80,7 +96,7 @@ class DueRentCard extends StatelessWidget {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(16),
                               child: Image.asset(
-                                rent['image'] as String,
+                                "SS",
                                 width: 32,
                                 height: 32,
                                 fit: BoxFit.cover,
@@ -91,7 +107,7 @@ class DueRentCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  rent['name'] as String,
+                                  "${rent.firstName} ${rent.lastName} ",
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,

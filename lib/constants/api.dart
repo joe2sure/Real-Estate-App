@@ -21,4 +21,5 @@ class ApiEndpoints {
 //   static const String logout = '$baseUrl/auth/logout';
 //   static const String properties = '$baseUrl/properties';
 //   static const String tenants = '$baseUrl/tenants';
-// }
+//   static const String overdue = "$baseUrl/dashboard/due-rents";
+}

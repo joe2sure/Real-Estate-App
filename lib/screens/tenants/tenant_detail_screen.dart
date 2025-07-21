@@ -39,6 +39,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   String? _selectedPropertyId;
   String _status = 'paid';
   final _formKey = GlobalKey<FormState>();
+  String activeTab = 'Main';
 
   @override
   void initState() {
@@ -201,8 +202,14 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     final isAdmin = authProvider.currentUser?.role == 'admin';
 
     return Scaffold(
+      backgroundColor: Colors.white,
+
       appBar: AppBar(
-        title: Text(_tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(_tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details', style: TextStyle(color: Colors.black)),
+        centerTitle: true,
+
         actions: isAdmin && _tenant != null
             ? [
                 IconButton(
@@ -233,6 +240,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                   child: _isEditing
                       ? Form(
                           key: _formKey,
+
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -447,49 +455,75 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Name: ${_tenant!.firstName} ${_tenant!.lastName}',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 8),
-                            Text('Email: ${_tenant!.email}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Phone: ${_tenant!.phone}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Property: ${_tenant!.property.name}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Unit: ${_tenant!.unit}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Rent Amount: \$${(_tenant!.rentAmount).toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Security Deposit: \$${(_tenant!.securityDeposit).toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Lease Start: ${DateFormat('MMMM d, yyyy').format(_tenant!.leaseStartDate)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Lease End: ${DateFormat('MMMM d, yyyy').format(_tenant!.leaseEndDate)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Next Payment Due: ${DateFormat('MMMM d, yyyy').format(_tenant!.nextPaymentDue)}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Status: ${_tenant!.status}', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Active: ${_tenant!.isActive ? 'Yes' : 'No'}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Contact: ${_tenant!.emergencyContact.name}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Phone: ${_tenant!.emergencyContact.phone}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Emergency Relationship: ${_tenant!.emergencyContact.relationship}',
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text('Notes: ${_tenant!.notes ?? 'None'}', style: const TextStyle(fontSize: 14)),
+                            Column(
+                              children: [
+                  Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    color:  Colors.blue[50]
+        ,
+                    elevation: 1,
+                    child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+
+                        child: Column(
+                          children: [
+                             CircleAvatar(
+                               backgroundColor: Colors.blue[50],
+                              radius: 40,
+                              child: Text("${_tenant!.firstName[0]} ",style: TextStyle(fontSize: 36)),
+
+                )
+                          ]
+                        )
+                    )),
+
+                                const SizedBox(height: 12),
+
+                                // Name
+
+                                Container(
+                                  padding: const EdgeInsets.all(1),
+                                    decoration: BoxDecoration(
+                                        color: Colors.blue[50],
+
+
+
+                                        borderRadius:  BorderRadius.all(Radius.circular(10))
+                                    ),
+
+                                  child: Row(
+                                    children: [
+
+                                      _buildTab('Main'),
+                                      _buildTab('other'),
+                                      _buildTab('emergency_info'),
+                                    ],
+
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Content
+                                if (activeTab == 'Main') _buildmaintab(),
+                                if (activeTab == 'other') _buildOthertab(),
+                                if (activeTab == 'emergency_info') _buildEmergencytab(),
+
+
+
+                                const SizedBox(height: 20),
+                                 Divider(color: Colors.blue[50]),
+                                _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
+
+                                 Divider(height: 40, color: Colors.blue[50]),
+
+                                // Apartment Info
+                                const SizedBox(height: 30),
+
+                                // Actions
+
+                              ],
+                            ),
+
                             if (isAdmin) ...[
                               const SizedBox(height: 16),
                               const Text('Send Payment Reminder',
@@ -551,4 +585,184 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     _reminderController.dispose();
     super.dispose();
   }
+  Widget _infoRow({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.black87),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildTab(String tab) {
+    final isActive = activeTab == tab;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => activeTab = tab),
+        child: Container(
+
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+color: isActive ? Colors.white : Colors.transparent,
+            border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 2,), borderRadius: BorderRadius.all(Radius.circular(10))
+          ),
+          child: Text(
+            tab[0].toUpperCase() + tab.substring(1),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isActive ? Colors.blue : Colors.blue,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildmaintab() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildmainRow(Icons.person, 'Full Name', '${_tenant!.firstName} ${_tenant!.lastName}'),
+
+            _buildmainRow(Icons.phone, 'Phone', '${_tenant!.phone}'),
+
+            _buildmainRow(Icons.email, 'Email', '${_tenant!.email}'),
+
+// Assuming "Status" refers to a membership/tenant status (like "Active", "Pending", etc.)
+            _buildmainRow(Icons.verified_user, 'Status', '${_tenant!.status}'),
+
+// Assuming "Available" refers to whether the tenant is currently active/available
+            _buildmainRow(Icons.check_circle, 'Available', '${_tenant!.isActive}'),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOthertab() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildmainRow(Icons.house, 'Property', '${_tenant!.property}'),
+            const Divider(),
+
+            _buildmainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
+            const Divider(),
+
+            _buildmainRow(Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
+            const Divider(),
+
+            _buildmainRow(Icons.savings, 'Security Deposit', '${_tenant!.securityDeposit}'),
+            const Divider(),
+
+            _buildmainRow(Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
+            const Divider(),
+
+            _buildmainRow(Icons.event, 'Lease End', '${_tenant!.leaseEndDate}'),
+            const Divider(),
+
+            _buildmainRow(Icons.calendar_today, 'Next Payment Date', '${_tenant!.nextPaymentDue}'),
+
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildEmergencytab() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildmainRow(Icons.person,'Name',  '${_tenant!.emergencyContact}'),
+            const Divider(),
+
+          ],
+        ),
+      ),
+    );
+  }Widget _buildmainRow(IconData icon, String label, String value) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.blue, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }

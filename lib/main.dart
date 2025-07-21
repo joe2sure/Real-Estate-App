@@ -55,10 +55,10 @@ class MyApp extends StatelessWidget {
           secondary: const Color(0xFF059669),
         ),
         scaffoldBackgroundColor: const Color(0xFFF7F7F7),
-        cardTheme: CardTheme(
+     /*   cardTheme: CardTheme(
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+        ),*/
         buttonTheme: const ButtonThemeData(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),

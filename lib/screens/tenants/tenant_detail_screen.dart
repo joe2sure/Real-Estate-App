@@ -670,7 +670,7 @@ color: isActive ? Colors.white : Colors.transparent,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildmainRow(Icons.house, 'Property', '${_tenant!.property}'),
+            _buildmainRow(Icons.house, 'Property', '${_tenant!.property.name}'),
             const Divider(),
 
             _buildmainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
@@ -703,9 +703,10 @@ color: isActive ? Colors.white : Colors.transparent,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildmainRow(Icons.person,'Name',  '${_tenant!.emergencyContact}'),
+            _buildmainRow(Icons.person,'Name',  '${_tenant!.emergencyContact.name}'),
             const Divider(),
-
+            _buildmainRow(Icons.phone,'Number',  '${_tenant!.emergencyContact.phone}'),
+            const Divider(),
           ],
         ),
       ),

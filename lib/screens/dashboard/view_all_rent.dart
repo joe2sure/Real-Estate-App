@@ -1,118 +1,140 @@
-import 'package:Peeman/models/tenant.dart';
-import 'package:Peeman/screens/dashboard/due_rent_card.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:Peeman/models/due_rent_model.dart';
 import 'package:flutter/material.dart';
-
-import '../../constants/colors.dart';
+import 'package:provider/provider.dart';
+import '../../providers/due_rent_provider.dart';
+import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
+import '../../constants/colors.dart';
 import '../tenants/tenant_detail_screen.dart';
 
-class ViewAllRent extends StatefulWidget {
-  final List<Tenant> tenants;
+class ViewAllDueRentScreen extends StatefulWidget {
+  final List<DueRentModel> duerents;
 
-  const ViewAllRent({super.key,  required this.tenants});
+  const ViewAllDueRentScreen({super.key,required this.duerents});
 
   @override
-  State<ViewAllRent> createState() => _ViewAllRentState();
+  State<ViewAllDueRentScreen> createState() => _ViewAllDueRentScreenState();
 }
 
-class _ViewAllRentState extends State<ViewAllRent> {
+class _ViewAllDueRentScreenState extends State<ViewAllDueRentScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-        appBar: AppBar(
-          title: const Text('Overdue Rent'),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 1,
-        ),
-        body: SingleChildScrollView(
-                  child: Padding(
-                          padding: const EdgeInsets.all(16),child: Column(children:
-    widget.tenants.map((rent) {
-                                      return _reusablecard(rent);
-    },).toList(),)
-        )
-    ));
-  }
-  Widget _reusablecard (Tenant rent){
-    return  GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TenantDetailScreen(
-                tenantId: rent.id
-            ),
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: CustomCard(
-          child: Container(
-            width: 600,
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.blue[50],
-                      radius: 32,
-                      child: Text("${rent.firstName[0]} ",style: TextStyle(fontSize: 36)),
 
-                    ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Due Rent'),
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.white,
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: widget.duerents.length,
+        itemBuilder: (context, index) {
+          final tenant = widget.duerents[index];
 
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${rent.firstName} ${rent.lastName}" ,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          "${rent.unit}, ${shorten(rent.property.address)} ",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.grey500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '\$${rent.rentAmount}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        TenantDetailScreen(tenantId: tenant.id),
+                  ),
+                );
+              },
+              child: CustomCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      CustomAvatar(
+                        imageUrl:
+                        '${tenant.firstName[0]}${tenant.lastName[0]}',
+                        size: 48,
+                        fallbackText:
+                        '${tenant.firstName[0]}${tenant.lastName[0]}',
                       ),
-                    ),
-                    CustomBadge(
-                      text: rent.status,
-                      backgroundColor: AppColors.amber100,
-                      textColor: AppColors.amber500,
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '${tenant.firstName} ${tenant.lastName}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                CustomBadge(
+                                  text: tenant.status,
+                                  backgroundColor:
+                                  tenant.status == 'paid'
+                                      ? AppColors.green100
+                                      : tenant.status ==
+                                      'overdue'
+                                      ? AppColors.red100
+                                      : AppColors.amber100,
+                                  textColor: tenant.status == 'paid'
+                                      ? AppColors.green500
+                                      : tenant.status == 'overdue'
+                                      ? AppColors.red500
+                                      : AppColors.amber500,
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '${tenant.unit}, ${tenant.property.name}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.grey500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.phone,
+                                  size: 14,
+                                  color: AppColors.grey500,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  tenant.phone,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.grey500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
-  }
-  String shorten(String text, [int maxLength = 20]) {
-    return text.length > maxLength ? '${text.substring(0, maxLength)}...' : text;
   }
 }

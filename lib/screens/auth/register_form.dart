@@ -70,15 +70,34 @@ class _RegisterFormState extends State<RegisterForm> with TickerProviderStateMix
   void _handleRegister() async {
     if (_formKey.currentState!.validate() && _agreeToTerms) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Store the input values before attempting registration
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      final role = _selectedRole;
+      
       final success = await authProvider.register(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        role: _selectedRole,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        role: role,
       );
 
       if (success) {
+        // Only clear form data on successful registration
+        _firstNameController.clear();
+        _lastNameController.clear();
+        _emailController.clear();
+        _passwordController.clear();
+        setState(() {
+          _agreeToTerms = false;
+          _selectedRole = 'user';
+          _isPasswordVisible = false;
+        });
+        
         Fluttertoast.showToast(
           msg: 'Registration successful',
           toastLength: Toast.LENGTH_SHORT,
@@ -91,6 +110,12 @@ class _RegisterFormState extends State<RegisterForm> with TickerProviderStateMix
           MaterialPageRoute(builder: (context) => const AuthScreen(initialTab: 'login')),
         );
       } else {
+        // Preserve form data on failed registration - don't clear controllers
+        // Only reset password visibility for security
+        setState(() {
+          _isPasswordVisible = false;
+        });
+        
         Fluttertoast.showToast(
           msg: authProvider.errorMessage ?? 'Registration failed',
           toastLength: Toast.LENGTH_SHORT,
@@ -541,7 +566,6 @@ class _RegisterFormState extends State<RegisterForm> with TickerProviderStateMix
     );
   }
 }
-
 
 
 

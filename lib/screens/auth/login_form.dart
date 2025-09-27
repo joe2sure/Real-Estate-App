@@ -66,12 +66,22 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      
+      // Store the input values before attempting login
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      
+      final success = await authProvider.login(email, password);
 
       if (success) {
+        // Only clear form data on successful login
+        _emailController.clear();
+        _passwordController.clear();
+        setState(() {
+          _rememberMe = false;
+          _isPasswordVisible = false;
+        });
+        
         Fluttertoast.showToast(
           msg: 'Login successful',
           toastLength: Toast.LENGTH_SHORT,
@@ -84,6 +94,12 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       } else {
+        // Preserve form data on failed login - don't clear controllers
+        // Only reset password visibility for security
+        setState(() {
+          _isPasswordVisible = false;
+        });
+        
         Fluttertoast.showToast(
           msg: authProvider.errorMessage ?? 'Login failed',
           toastLength: Toast.LENGTH_SHORT,
@@ -380,7 +396,6 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
     );
   }
 }
-
 
 
 // import 'package:flutter/material.dart';

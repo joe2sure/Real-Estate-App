@@ -3,12 +3,12 @@ import 'package:Peeman/providers/due_rent_provider.dart';
 import 'package:Peeman/screens/dashboard/view_all_rent.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../constants/assets.dart';
 import '../../constants/colors.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 import '../tenants/tenant_detail_screen.dart';
+// import '../../constants/assets.dart';
 
 class DueRentCard extends StatefulWidget {
   const DueRentCard({super.key});

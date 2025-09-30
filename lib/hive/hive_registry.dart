@@ -1,6 +1,8 @@
 // lib/hive/hive_registry.dart
 
+// import 'package:Peeman/models/tenant.g.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+// import '../models/tenant.g.dart';
 import '../models/user_model.dart';
 import '../models/tenant.dart';  
 import '../models/payment_model.dart';

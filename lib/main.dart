@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/room_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -34,6 +35,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => PropertyProvider()),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
+         ChangeNotifierProvider(create: (_) => RoomProvider()),
       ],
       child: const MyApp(),
     ),

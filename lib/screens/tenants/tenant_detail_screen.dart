@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,8 @@ import '../../models/tenant.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/tenant_provider.dart';
 import '../../providers/property_provider.dart';
+import '../../providers/room_provider.dart';
+import '../../widgets/custom_toaster.dart';
 
 class TenantDetailScreen extends StatefulWidget {
   final String tenantId;
@@ -20,6 +23,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   Tenant? _tenant;
   bool _isLoading = true;
   bool _isEditing = false;
+  String _activeTab = 'Main';
 
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -37,9 +41,9 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _reminderController = TextEditingController();
   String? _selectedPropertyId;
+  String? _selectedRoomId;
   String _status = 'paid';
   final _formKey = GlobalKey<FormState>();
-  String activeTab = 'Main';
 
   @override
   void initState() {
@@ -71,13 +75,15 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         _status = tenant.status;
         _isLoading = false;
       });
+      if (_selectedPropertyId != null) {
+        await Provider.of<RoomProvider>(context, listen: false)
+            .fetchRoomsByProperty(context, _selectedPropertyId!);
+      }
     } catch (error) {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load tenant: $error')),
-      );
+      CustomToast.show(context, 'Failed to load tenant: $error', isSuccess: false);
     }
   }
 
@@ -120,19 +126,16 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
       await Provider.of<TenantProvider>(context, listen: false)
           .updateTenant(context, widget.tenantId, tenantData);
       if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  Provider.of<TenantProvider>(context, listen: false).errorMessage ??
-                      'Failed to update tenant')),
-        );
+        CustomToast.show(
+            context,
+            Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+                'Failed to update tenant',
+            isSuccess: false);
       } else {
         setState(() {
           _isEditing = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tenant updated successfully')),
-        );
+        CustomToast.show(context, 'Tenant updated successfully');
         _fetchTenant();
       }
     }
@@ -159,17 +162,14 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     if (confirm == true) {
       await Provider.of<TenantProvider>(context, listen: false).deleteTenant(context, widget.tenantId);
       if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  Provider.of<TenantProvider>(context, listen: false).errorMessage ??
-                      'Failed to delete tenant')),
-        );
+        CustomToast.show(
+            context,
+            Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+                'Failed to delete tenant',
+            isSuccess: false);
       } else {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tenant deleted successfully')),
-        );
+        CustomToast.show(context, 'Tenant deleted successfully');
       }
     }
   }
@@ -181,17 +181,69 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     await Provider.of<TenantProvider>(context, listen: false)
         .sendPaymentReminder(context, widget.tenantId, message);
     if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                Provider.of<TenantProvider>(context, listen: false).errorMessage ??
-                    'Failed to send payment reminder')),
-      );
+      CustomToast.show(
+          context,
+          Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+              'Failed to send payment reminder',
+          isSuccess: false);
     } else {
       _reminderController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment reminder sent successfully')),
-      );
+      CustomToast.show(context, 'Payment reminder sent successfully');
+    }
+  }
+
+  Future<void> _assignTenantToRoom() async {
+    if (_selectedRoomId == null) {
+      CustomToast.show(context, 'Please select a room', isSuccess: false);
+      return;
+    }
+    await Provider.of<RoomProvider>(context, listen: false)
+        .assignTenantToRoom(context, _selectedRoomId!, widget.tenantId);
+    if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+      CustomToast.show(context, 'Tenant assigned to room successfully');
+      _fetchTenant();
+    } else {
+      CustomToast.show(
+          context,
+          Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+          isSuccess: false);
+    }
+  }
+
+  Future<void> _removeTenantFromRoom() async {
+    if (_tenant!.room == null) {
+      CustomToast.show(context, 'Tenant is not assigned to any room', isSuccess: false);
+      return;
+    }
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Tenant from Room'),
+        content: const Text('Are you sure you want to remove this tenant from their room?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remove', style: TextStyle(color: AppColors.red500)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await Provider.of<RoomProvider>(context, listen: false)
+          .removeTenantFromRoom(context, _tenant!.room!);
+      if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+        CustomToast.show(context, 'Tenant removed from room successfully');
+        _fetchTenant();
+      } else {
+        CustomToast.show(
+            context,
+            Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+            isSuccess: false);
+      }
     }
   }
 
@@ -199,17 +251,19 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final propertyProvider = Provider.of<PropertyProvider>(context);
+    final roomProvider = Provider.of<RoomProvider>(context);
     final isAdmin = authProvider.currentUser?.role == 'admin';
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Text(_tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details', style: TextStyle(color: Colors.black)),
+        title: Text(
+          _tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details',
+          style: const TextStyle(color: Colors.black),
+        ),
         centerTitle: true,
-
         actions: isAdmin && _tenant != null
             ? [
                 IconButton(
@@ -240,7 +294,6 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                   child: _isEditing
                       ? Form(
                           key: _formKey,
-
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -307,9 +360,36 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     _selectedPropertyId = value;
+                                    _selectedRoomId = null;
+                                    if (value != null) {
+                                      Provider.of<RoomProvider>(context, listen: false)
+                                          .fetchRoomsByProperty(context, value);
+                                    }
                                   });
                                 },
                                 validator: (value) => value == null ? 'Please select a property' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              DropdownButtonFormField<String>(
+                                value: _selectedRoomId,
+                                decoration: InputDecoration(
+                                  labelText: 'Room (Optional)',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                ),
+                                items: roomProvider.rooms
+                                    .where((room) => room.isAvailable)
+                                    .map((room) => DropdownMenuItem(
+                                          value: room.id,
+                                          child: Text('Room ${room.roomNumber}'),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedRoomId = value;
+                                  });
+                                },
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
@@ -455,76 +535,147 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              children: [
-                  Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    color:  Colors.blue[50]
-        ,
-                    elevation: 1,
-                    child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-
-                        child: Column(
-                          children: [
-                             CircleAvatar(
-                               backgroundColor: Colors.blue[50],
-                              radius: 40,
-                              child: Text("${_tenant!.firstName[0]} ",style: TextStyle(fontSize: 36)),
-
-                )
-                          ]
-                        )
-                    )),
-
-                                const SizedBox(height: 12),
-
-                                // Name
-
-                                Container(
-                                  padding: const EdgeInsets.all(1),
-                                    decoration: BoxDecoration(
-                                        color: Colors.blue[50],
-
-
-
-                                        borderRadius:  BorderRadius.all(Radius.circular(10))
+                            Card(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              color: Colors.blue[50],
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.blue[50],
+                                      radius: 40,
+                                      child: Text(
+                                        "${_tenant!.firstName[0]}",
+                                        style: const TextStyle(fontSize: 36),
+                                      ),
                                     ),
-
-                                  child: Row(
-                                    children: [
-
-                                      _buildTab('Main'),
-                                      _buildTab('other'),
-                                      _buildTab('emergency_info'),
-                                    ],
-
-                                  ),
+                                  ],
                                 ),
-                                const SizedBox(height: 12),
-
-                                // Content
-                                if (activeTab == 'Main') _buildmaintab(),
-                                if (activeTab == 'other') _buildOthertab(),
-                                if (activeTab == 'emergency_info') _buildEmergencytab(),
-
-
-
-                                const SizedBox(height: 20),
-                                 Divider(color: Colors.blue[50]),
-                                _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
-
-                                 Divider(height: 40, color: Colors.blue[50]),
-
-                                // Apartment Info
-                                const SizedBox(height: 30),
-
-                                // Actions
-
-                              ],
+                              ),
                             ),
-
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildTab('Main'),
+                                  _buildTab('other'),
+                                  _buildTab('emergency_info'),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (_activeTab == 'Main') _buildMainTab(),
+                            if (_activeTab == 'other') _buildOtherTab(),
+                            if (_activeTab == 'emergency_info') _buildEmergencyTab(),
+                            const SizedBox(height: 20),
+                            Divider(color: Colors.blue[50]),
+                            _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
+                            Divider(height: 40, color: Colors.blue[50]),
                             if (isAdmin) ...[
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Room Assignment',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _selectedPropertyId,
+                                decoration: InputDecoration(
+                                  labelText: 'Property',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                ),
+                                items: propertyProvider.properties
+                                    .map((property) => DropdownMenuItem(
+                                          value: property.id,
+                                          child: Text(property.name),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedPropertyId = value;
+                                    _selectedRoomId = null;
+                                    if (value != null) {
+                                      Provider.of<RoomProvider>(context, listen: false)
+                                          .fetchRoomsByProperty(context, value);
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              DropdownButtonFormField<String>(
+                                value: _selectedRoomId,
+                                decoration: InputDecoration(
+                                  labelText: 'Room',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                ),
+                                items: roomProvider.rooms
+                                    .where((room) => room.isAvailable)
+                                    .map((room) => DropdownMenuItem(
+                                          value: room.id,
+                                          child: Text('Room ${room.roomNumber}'),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedRoomId = value;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: _assignTenantToRoom,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          shadowColor: Colors.transparent,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        child: const Text('Assign Room', style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [AppColors.red500, AppColors.red600],
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: _removeTenantFromRoom,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          shadowColor: Colors.transparent,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        child: const Text('Remove from Room', style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 16),
                               const Text('Send Payment Reminder',
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -585,6 +736,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     _reminderController.dispose();
     super.dispose();
   }
+
   Widget _infoRow({required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -609,18 +761,17 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     );
   }
 
-
   Widget _buildTab(String tab) {
-    final isActive = activeTab == tab;
+    final isActive = _activeTab == tab;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => activeTab = tab),
+        onTap: () => setState(() => _activeTab = tab),
         child: Container(
-
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-color: isActive ? Colors.white : Colors.transparent,
-            border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 2,), borderRadius: BorderRadius.all(Radius.circular(10))
+            color: isActive ? Colors.white : Colors.transparent,
+            border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 2),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
             tab[0].toUpperCase() + tab.substring(1),
@@ -635,7 +786,7 @@ color: isActive ? Colors.white : Colors.transparent,
     );
   }
 
-  Widget _buildmaintab() {
+  Widget _buildMainTab() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
@@ -644,25 +795,18 @@ color: isActive ? Colors.white : Colors.transparent,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildmainRow(Icons.person, 'Full Name', '${_tenant!.firstName} ${_tenant!.lastName}'),
-
-            _buildmainRow(Icons.phone, 'Phone', '${_tenant!.phone}'),
-
-            _buildmainRow(Icons.email, 'Email', '${_tenant!.email}'),
-
-// Assuming "Status" refers to a membership/tenant status (like "Active", "Pending", etc.)
-            _buildmainRow(Icons.verified_user, 'Status', '${_tenant!.status}'),
-
-// Assuming "Available" refers to whether the tenant is currently active/available
-            _buildmainRow(Icons.check_circle, 'Available', '${_tenant!.isActive}'),
-
+            _buildMainRow(Icons.person, 'Full Name', '${_tenant!.firstName} ${_tenant!.lastName}'),
+            _buildMainRow(Icons.phone, 'Phone', '${_tenant!.phone}'),
+            _buildMainRow(Icons.email, 'Email', '${_tenant!.email}'),
+            _buildMainRow(Icons.verified_user, 'Status', '${_tenant!.status}'),
+            _buildMainRow(Icons.check_circle, 'Available', '${_tenant!.isActive}'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOthertab() {
+  Widget _buildOtherTab() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1,
@@ -670,32 +814,26 @@ color: isActive ? Colors.white : Colors.transparent,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildmainRow(Icons.house, 'Property', '${_tenant!.property.name}'),
+            _buildMainRow(Icons.house, 'Property', '${_tenant!.property.name}'),
             const Divider(),
-
-            _buildmainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
+            _buildMainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
             const Divider(),
-
-            _buildmainRow(Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
+            _buildMainRow(Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
             const Divider(),
-
-            _buildmainRow(Icons.savings, 'Security Deposit', '${_tenant!.securityDeposit}'),
+            _buildMainRow(Icons.savings, 'Security Deposit', '${_tenant!.securityDeposit}'),
             const Divider(),
-
-            _buildmainRow(Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
+            _buildMainRow(Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
             const Divider(),
-
-            _buildmainRow(Icons.event, 'Lease End', '${_tenant!.leaseEndDate}'),
+            _buildMainRow(Icons.event, 'Lease End', '${_tenant!.leaseEndDate}'),
             const Divider(),
-
-            _buildmainRow(Icons.calendar_today, 'Next Payment Date', '${_tenant!.nextPaymentDue}'),
-
+            _buildMainRow(Icons.calendar_today, 'Next Payment Date', '${_tenant!.nextPaymentDue}'),
           ],
         ),
       ),
     );
   }
-  Widget _buildEmergencytab() {
+
+  Widget _buildEmergencyTab() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1,
@@ -703,15 +841,18 @@ color: isActive ? Colors.white : Colors.transparent,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildmainRow(Icons.person,'Name',  '${_tenant!.emergencyContact.name}'),
+            _buildMainRow(Icons.person, 'Name', '${_tenant!.emergencyContact.name}'),
             const Divider(),
-            _buildmainRow(Icons.phone,'Number',  '${_tenant!.emergencyContact.phone}'),
+            _buildMainRow(Icons.phone, 'Number', '${_tenant!.emergencyContact.phone}'),
             const Divider(),
+            _buildMainRow(Icons.family_restroom, 'Relationship', '${_tenant!.emergencyContact.relationship}'),
           ],
         ),
       ),
     );
-  }Widget _buildmainRow(IconData icon, String label, String value) {
+  }
+
+  Widget _buildMainRow(IconData icon, String label, String value) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -765,3 +906,775 @@ color: isActive ? Colors.white : Colors.transparent,
     );
   }
 }
+
+
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:intl/intl.dart';
+// import 'package:provider/provider.dart';
+// import '../../constants/colors.dart';
+// import '../../models/tenant.dart';
+// import '../../providers/auth_provider.dart';
+// import '../../providers/tenant_provider.dart';
+// import '../../providers/property_provider.dart';
+
+// class TenantDetailScreen extends StatefulWidget {
+//   final String tenantId;
+
+//   const TenantDetailScreen({super.key, required this.tenantId});
+
+//   @override
+//   State<TenantDetailScreen> createState() => _TenantDetailScreenState();
+// }
+
+// class _TenantDetailScreenState extends State<TenantDetailScreen> {
+//   Tenant? _tenant;
+//   bool _isLoading = true;
+//   bool _isEditing = false;
+
+//   final TextEditingController _firstNameController = TextEditingController();
+//   final TextEditingController _lastNameController = TextEditingController();
+//   final TextEditingController _emailController = TextEditingController();
+//   final TextEditingController _phoneController = TextEditingController();
+//   final TextEditingController _unitController = TextEditingController();
+//   final TextEditingController _rentAmountController = TextEditingController();
+//   final TextEditingController _securityDepositController = TextEditingController();
+//   final TextEditingController _leaseStartDateController = TextEditingController();
+//   final TextEditingController _leaseEndDateController = TextEditingController();
+//   final TextEditingController _nextPaymentDueController = TextEditingController();
+//   final TextEditingController _emergencyNameController = TextEditingController();
+//   final TextEditingController _emergencyPhoneController = TextEditingController();
+//   final TextEditingController _emergencyRelationshipController = TextEditingController();
+//   final TextEditingController _notesController = TextEditingController();
+//   final TextEditingController _reminderController = TextEditingController();
+//   String? _selectedPropertyId;
+//   String _status = 'paid';
+//   final _formKey = GlobalKey<FormState>();
+//   String activeTab = 'Main';
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _fetchTenant();
+//   }
+
+//   Future<void> _fetchTenant() async {
+//     try {
+//       final tenant = await Provider.of<TenantProvider>(context, listen: false)
+//           .fetchTenantById(context, widget.tenantId);
+//       setState(() {
+//         _tenant = tenant;
+//         _firstNameController.text = tenant.firstName;
+//         _lastNameController.text = tenant.lastName;
+//         _emailController.text = tenant.email;
+//         _phoneController.text = tenant.phone;
+//         _unitController.text = tenant.unit;
+//         _rentAmountController.text = tenant.rentAmount.toString();
+//         _securityDepositController.text = tenant.securityDeposit.toString();
+//         _leaseStartDateController.text = tenant.leaseStartDate.toIso8601String().split('T')[0];
+//         _leaseEndDateController.text = tenant.leaseEndDate.toIso8601String().split('T')[0];
+//         _nextPaymentDueController.text = tenant.nextPaymentDue.toIso8601String().split('T')[0];
+//         _emergencyNameController.text = tenant.emergencyContact.name;
+//         _emergencyPhoneController.text = tenant.emergencyContact.phone;
+//         _emergencyRelationshipController.text = tenant.emergencyContact.relationship;
+//         _notesController.text = tenant.notes ?? '';
+//         _selectedPropertyId = tenant.property.id;
+//         _status = tenant.status;
+//         _isLoading = false;
+//       });
+//     } catch (error) {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text('Failed to load tenant: $error')),
+//       );
+//     }
+//   }
+
+//   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+//     final DateTime? picked = await showDatePicker(
+//       context: context,
+//       initialDate: DateTime.now(),
+//       firstDate: DateTime(2000),
+//       lastDate: DateTime(2101),
+//     );
+//     if (picked != null) {
+//       setState(() {
+//         controller.text = picked.toIso8601String().split('T')[0];
+//       });
+//     }
+//   }
+
+//   Future<void> _updateTenant() async {
+//     if (_formKey.currentState!.validate()) {
+//       final tenantData = {
+//         'firstName': _firstNameController.text,
+//         'lastName': _lastNameController.text,
+//         'email': _emailController.text,
+//         'phone': _phoneController.text,
+//         'unit': _unitController.text,
+//         'property': _selectedPropertyId,
+//         'rentAmount': double.parse(_rentAmountController.text),
+//         'securityDeposit': double.parse(_securityDepositController.text),
+//         'leaseStartDate': _leaseStartDateController.text,
+//         'leaseEndDate': _leaseEndDateController.text,
+//         'nextPaymentDue': _nextPaymentDueController.text,
+//         'status': _status,
+//         'emergencyContact': {
+//           'name': _emergencyNameController.text,
+//           'phone': _emergencyPhoneController.text,
+//           'relationship': _emergencyRelationshipController.text,
+//         },
+//         'notes': _notesController.text.isEmpty ? null : _notesController.text,
+//       };
+//       await Provider.of<TenantProvider>(context, listen: false)
+//           .updateTenant(context, widget.tenantId, tenantData);
+//       if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//               content: Text(
+//                   Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+//                       'Failed to update tenant')),
+//         );
+//       } else {
+//         setState(() {
+//           _isEditing = false;
+//         });
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text('Tenant updated successfully')),
+//         );
+//         _fetchTenant();
+//       }
+//     }
+//   }
+
+//   Future<void> _deleteTenant() async {
+//     final confirm = await showDialog<bool>(
+//       context: context,
+//       builder: (context) => AlertDialog(
+//         title: const Text('Delete Tenant'),
+//         content: const Text('Are you sure you want to delete this tenant?'),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Navigator.pop(context, false),
+//             child: const Text('Cancel'),
+//           ),
+//           TextButton(
+//             onPressed: () => Navigator.pop(context, true),
+//             child: const Text('Delete', style: TextStyle(color: AppColors.red500)),
+//           ),
+//         ],
+//       ),
+//     );
+//     if (confirm == true) {
+//       await Provider.of<TenantProvider>(context, listen: false).deleteTenant(context, widget.tenantId);
+//       if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//               content: Text(
+//                   Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+//                       'Failed to delete tenant')),
+//         );
+//       } else {
+//         Navigator.pop(context);
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text('Tenant deleted successfully')),
+//         );
+//       }
+//     }
+//   }
+
+//   Future<void> _sendPaymentReminder() async {
+//     final message = _reminderController.text.isEmpty
+//         ? 'Dear ${_tenant!.firstName}, your rent payment of \$${_tenant!.rentAmount} is due on ${DateFormat('MMMM d').format(_tenant!.nextPaymentDue)}. Please make payment to avoid late fees. Thank you!'
+//         : _reminderController.text;
+//     await Provider.of<TenantProvider>(context, listen: false)
+//         .sendPaymentReminder(context, widget.tenantId, message);
+//     if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//             content: Text(
+//                 Provider.of<TenantProvider>(context, listen: false).errorMessage ??
+//                     'Failed to send payment reminder')),
+//       );
+//     } else {
+//       _reminderController.clear();
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Payment reminder sent successfully')),
+//       );
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final authProvider = Provider.of<AuthProvider>(context);
+//     final propertyProvider = Provider.of<PropertyProvider>(context);
+//     final isAdmin = authProvider.currentUser?.role == 'admin';
+
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+
+//       appBar: AppBar(
+//         elevation: 0,
+//         backgroundColor: Colors.white,
+//         title: Text(_tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details', style: TextStyle(color: Colors.black)),
+//         centerTitle: true,
+
+//         actions: isAdmin && _tenant != null
+//             ? [
+//                 IconButton(
+//                   icon: Icon(_isEditing ? Icons.save : Icons.edit),
+//                   onPressed: () {
+//                     if (_isEditing) {
+//                       _updateTenant();
+//                     } else {
+//                       setState(() {
+//                         _isEditing = true;
+//                       });
+//                     }
+//                   },
+//                 ),
+//                 IconButton(
+//                   icon: const Icon(Icons.delete, color: AppColors.red500),
+//                   onPressed: _deleteTenant,
+//                 ),
+//               ]
+//             : null,
+//       ),
+//       body: _isLoading
+//           ? const Center(child: CircularProgressIndicator())
+//           : _tenant == null
+//               ? const Center(child: Text('Failed to load tenant'))
+//               : SingleChildScrollView(
+//                   padding: const EdgeInsets.all(16),
+//                   child: _isEditing
+//                       ? Form(
+//                           key: _formKey,
+
+//                           child: Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
+//                               TextFormField(
+//                                 controller: _firstNameController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'First Name',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 validator: (value) => value!.isEmpty ? 'Please enter first name' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _lastNameController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Last Name',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 validator: (value) => value!.isEmpty ? 'Please enter last name' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _emailController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Email',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 keyboardType: TextInputType.emailAddress,
+//                                 validator: (value) => value!.isEmpty ? 'Please enter email' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _phoneController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Phone Number',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 keyboardType: TextInputType.phone,
+//                                 validator: (value) => value!.isEmpty ? 'Please enter phone number' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               DropdownButtonFormField<String>(
+//                                 value: _selectedPropertyId,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Property',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 items: propertyProvider.properties
+//                                     .map((property) => DropdownMenuItem(
+//                                           value: property.id,
+//                                           child: Text(property.name),
+//                                         ))
+//                                     .toList(),
+//                                 onChanged: (value) {
+//                                   setState(() {
+//                                     _selectedPropertyId = value;
+//                                   });
+//                                 },
+//                                 validator: (value) => value == null ? 'Please select a property' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _unitController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Unit Number',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 validator: (value) => value!.isEmpty ? 'Please enter unit number' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _rentAmountController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Rent Amount',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 keyboardType: TextInputType.number,
+//                                 validator: (value) => value!.isEmpty ? 'Please enter rent amount' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _securityDepositController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Security Deposit',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 keyboardType: TextInputType.number,
+//                                 validator: (value) => value!.isEmpty ? 'Please enter security deposit' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _leaseStartDateController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Lease Start Date (YYYY-MM-DD)',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 readOnly: true,
+//                                 onTap: () => _selectDate(context, _leaseStartDateController),
+//                                 validator: (value) => value!.isEmpty ? 'Please select lease start date' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _leaseEndDateController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Lease End Date (YYYY-MM-DD)',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 readOnly: true,
+//                                 onTap: () => _selectDate(context, _leaseEndDateController),
+//                                 validator: (value) => value!.isEmpty ? 'Please select lease end date' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _nextPaymentDueController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Next Payment Due (YYYY-MM-DD)',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 readOnly: true,
+//                                 onTap: () => _selectDate(context, _nextPaymentDueController),
+//                                 validator: (value) => value!.isEmpty ? 'Please select next payment due date' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               DropdownButtonFormField<String>(
+//                                 value: _status,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Payment Status',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 items: ['paid', 'overdue', 'pending']
+//                                     .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+//                                     .toList(),
+//                                 onChanged: (value) {
+//                                   setState(() {
+//                                     _status = value!;
+//                                   });
+//                                 },
+//                                 validator: (value) => value == null ? 'Please select a status' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _emergencyNameController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Emergency Contact Name',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 validator: (value) => value!.isEmpty ? 'Please enter emergency contact name' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _emergencyPhoneController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Emergency Contact Phone',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 keyboardType: TextInputType.phone,
+//                                 validator: (value) => value!.isEmpty ? 'Please enter emergency contact phone' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _emergencyRelationshipController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Emergency Contact Relationship',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 validator: (value) => value!.isEmpty ? 'Please enter relationship' : null,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               TextFormField(
+//                                 controller: _notesController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Notes (Optional)',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 maxLines: 3,
+//                               ),
+//                             ],
+//                           ),
+//                         )
+//                       : Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: [
+//                             Column(
+//                               children: [
+//                   Card(
+//                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//                     color:  Colors.blue[50]
+//         ,
+//                     elevation: 1,
+//                     child: Padding(
+//                         padding: const EdgeInsets.all(24.0),
+
+//                         child: Column(
+//                           children: [
+//                              CircleAvatar(
+//                                backgroundColor: Colors.blue[50],
+//                               radius: 40,
+//                               child: Text("${_tenant!.firstName[0]} ",style: TextStyle(fontSize: 36)),
+
+//                 )
+//                           ]
+//                         )
+//                     )),
+
+//                                 const SizedBox(height: 12),
+
+//                                 // Name
+
+//                                 Container(
+//                                   padding: const EdgeInsets.all(1),
+//                                     decoration: BoxDecoration(
+//                                         color: Colors.blue[50],
+
+
+
+//                                         borderRadius:  BorderRadius.all(Radius.circular(10))
+//                                     ),
+
+//                                   child: Row(
+//                                     children: [
+
+//                                       _buildTab('Main'),
+//                                       _buildTab('other'),
+//                                       _buildTab('emergency_info'),
+//                                     ],
+
+//                                   ),
+//                                 ),
+//                                 const SizedBox(height: 12),
+
+//                                 // Content
+//                                 if (activeTab == 'Main') _buildmaintab(),
+//                                 if (activeTab == 'other') _buildOthertab(),
+//                                 if (activeTab == 'emergency_info') _buildEmergencytab(),
+
+
+
+//                                 const SizedBox(height: 20),
+//                                  Divider(color: Colors.blue[50]),
+//                                 _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
+
+//                                  Divider(height: 40, color: Colors.blue[50]),
+
+//                                 // Apartment Info
+//                                 const SizedBox(height: 30),
+
+//                                 // Actions
+
+//                               ],
+//                             ),
+
+//                             if (isAdmin) ...[
+//                               const SizedBox(height: 16),
+//                               const Text('Send Payment Reminder',
+//                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+//                               const SizedBox(height: 8),
+//                               TextFormField(
+//                                 controller: _reminderController,
+//                                 decoration: InputDecoration(
+//                                   labelText: 'Reminder Message (Optional)',
+//                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                                   filled: true,
+//                                   fillColor: AppColors.grey50,
+//                                 ),
+//                                 maxLines: 3,
+//                               ),
+//                               const SizedBox(height: 12),
+//                               Container(
+//                                 width: double.infinity,
+//                                 height: 48,
+//                                 decoration: BoxDecoration(
+//                                   gradient: LinearGradient(
+//                                     colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+//                                   ),
+//                                   borderRadius: BorderRadius.circular(8),
+//                                 ),
+//                                 child: ElevatedButton(
+//                                   onPressed: _sendPaymentReminder,
+//                                   style: ElevatedButton.styleFrom(
+//                                     backgroundColor: Colors.transparent,
+//                                     shadowColor: Colors.transparent,
+//                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+//                                   ),
+//                                   child: const Text('Send Reminder', style: TextStyle(color: Colors.white)),
+//                                 ),
+//                               ),
+//                             ],
+//                           ],
+//                         ),
+//                 ),
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     _firstNameController.dispose();
+//     _lastNameController.dispose();
+//     _emailController.dispose();
+//     _phoneController.dispose();
+//     _unitController.dispose();
+//     _rentAmountController.dispose();
+//     _securityDepositController.dispose();
+//     _leaseStartDateController.dispose();
+//     _leaseEndDateController.dispose();
+//     _nextPaymentDueController.dispose();
+//     _emergencyNameController.dispose();
+//     _emergencyPhoneController.dispose();
+//     _emergencyRelationshipController.dispose();
+//     _notesController.dispose();
+//     _reminderController.dispose();
+//     super.dispose();
+//   }
+//   Widget _infoRow({required String label, required String value}) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 8),
+//       child: Row(
+//         children: [
+//           Text(
+//             '$label: ',
+//             style: const TextStyle(
+//               fontWeight: FontWeight.bold,
+//               color: Colors.black,
+//             ),
+//           ),
+//           Expanded(
+//             child: Text(
+//               value,
+//               style: const TextStyle(color: Colors.black87),
+//               overflow: TextOverflow.ellipsis,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+
+//   Widget _buildTab(String tab) {
+//     final isActive = activeTab == tab;
+//     return Expanded(
+//       child: GestureDetector(
+//         onTap: () => setState(() => activeTab = tab),
+//         child: Container(
+
+//           padding: const EdgeInsets.symmetric(vertical: 12),
+//           decoration: BoxDecoration(
+// color: isActive ? Colors.white : Colors.transparent,
+//             border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 2,), borderRadius: BorderRadius.all(Radius.circular(10))
+//           ),
+//           child: Text(
+//             tab[0].toUpperCase() + tab.substring(1),
+//             textAlign: TextAlign.center,
+//             style: TextStyle(
+//               color: isActive ? Colors.blue : Colors.blue,
+//               fontWeight: FontWeight.w500,
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildmaintab() {
+//     return Card(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//       elevation: 2,
+//       color: Colors.blue[50],
+//       child: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           children: [
+//             _buildmainRow(Icons.person, 'Full Name', '${_tenant!.firstName} ${_tenant!.lastName}'),
+
+//             _buildmainRow(Icons.phone, 'Phone', '${_tenant!.phone}'),
+
+//             _buildmainRow(Icons.email, 'Email', '${_tenant!.email}'),
+
+// // Assuming "Status" refers to a membership/tenant status (like "Active", "Pending", etc.)
+//             _buildmainRow(Icons.verified_user, 'Status', '${_tenant!.status}'),
+
+// // Assuming "Available" refers to whether the tenant is currently active/available
+//             _buildmainRow(Icons.check_circle, 'Available', '${_tenant!.isActive}'),
+
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildOthertab() {
+//     return Card(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//       elevation: 1,
+//       child: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           children: [
+//             _buildmainRow(Icons.house, 'Property', '${_tenant!.property.name}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.savings, 'Security Deposit', '${_tenant!.securityDeposit}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.event, 'Lease End', '${_tenant!.leaseEndDate}'),
+//             const Divider(),
+
+//             _buildmainRow(Icons.calendar_today, 'Next Payment Date', '${_tenant!.nextPaymentDue}'),
+
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//   Widget _buildEmergencytab() {
+//     return Card(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//       elevation: 1,
+//       child: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           children: [
+//             _buildmainRow(Icons.person,'Name',  '${_tenant!.emergencyContact.name}'),
+//             const Divider(),
+//             _buildmainRow(Icons.phone,'Number',  '${_tenant!.emergencyContact.phone}'),
+//             const Divider(),
+//           ],
+//         ),
+//       ),
+//     );
+//   }Widget _buildmainRow(IconData icon, String label, String value) {
+//     return Container(
+//       margin: const EdgeInsets.symmetric(vertical: 6),
+//       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(12),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.05),
+//             blurRadius: 8,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Row(
+//         children: [
+//           Container(
+//             padding: const EdgeInsets.all(8),
+//             decoration: BoxDecoration(
+//               color: Colors.blue.shade50,
+//               shape: BoxShape.circle,
+//             ),
+//             child: Icon(icon, color: Colors.blue, size: 20),
+//           ),
+//           const SizedBox(width: 16),
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   label,
+//                   style: const TextStyle(
+//                     fontSize: 14,
+//                     fontWeight: FontWeight.w600,
+//                     color: Colors.black87,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 4),
+//                 Text(
+//                   value,
+//                   style: const TextStyle(
+//                     fontSize: 13,
+//                     color: Colors.grey,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

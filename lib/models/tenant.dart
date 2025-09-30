@@ -1,7 +1,7 @@
+import 'package:Peeman/hive/type_ids.dart';
 import 'package:hive/hive.dart';
-import '../hive/type_ids.dart';
 
-part 'tenant.g.dart';
+part 'tenant.g.dart';  // This is CRITICAL - tells build_runner to generate the adapters
 
 @HiveType(typeId: HiveTypeIds.property)
 class Property {
@@ -85,6 +85,8 @@ class Tenant {
   final EmergencyContact emergencyContact;
   @HiveField(15)
   final String? notes;
+  @HiveField(16)
+  final String? room;
 
   Tenant({
     required this.id,
@@ -103,6 +105,7 @@ class Tenant {
     required this.isActive,
     required this.emergencyContact,
     this.notes,
+    this.room,
   });
 
   factory Tenant.fromJson(Map<String, dynamic> json) => Tenant(
@@ -122,6 +125,7 @@ class Tenant {
         isActive: json['isActive'] ?? false,
         emergencyContact: EmergencyContact.fromJson(json['emergencyContact'] ?? {}),
         notes: json['notes'],
+        room: json['room'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -141,15 +145,17 @@ class Tenant {
         'isActive': isActive,
         'emergencyContact': emergencyContact.toJson(),
         'notes': notes,
+        'room': room,
       };
 }
 
 
 // import 'package:hive/hive.dart';
+// import '../hive/type_ids.dart';
 
 // part 'tenant.g.dart';
 
-// @HiveType(typeId: 1)
+// @HiveType(typeId: HiveTypeIds.property)
 // class Property {
 //   @HiveField(0)
 //   final String id;
@@ -173,7 +179,7 @@ class Tenant {
 //       };
 // }
 
-// @HiveType(typeId: 2)
+// @HiveType(typeId: HiveTypeIds.emergencyContact)
 // class EmergencyContact {
 //   @HiveField(0)
 //   final String name;
@@ -197,7 +203,7 @@ class Tenant {
 //       };
 // }
 
-// @HiveType(typeId: 7)
+// @HiveType(typeId: HiveTypeIds.tenant)
 // class Tenant {
 //   @HiveField(0)
 //   final String id;

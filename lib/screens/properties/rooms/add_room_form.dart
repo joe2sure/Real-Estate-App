@@ -1,6 +1,7 @@
 import 'package:Peeman/constants/colors.dart';
 import 'package:Peeman/providers/property_provider.dart';
 import 'package:Peeman/providers/room_provider.dart';
+import 'package:Peeman/models/property_model.dart';
 import 'package:Peeman/widgets/custom_toaster.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

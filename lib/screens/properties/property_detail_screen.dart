@@ -1,11 +1,12 @@
 import 'package:Peeman/screens/properties/rooms/room_card.dart';
+import 'package:Peeman/screens/properties/rooms/add_room_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../models/property_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/property_provider.dart';
 import '../../providers/room_provider.dart';
-// import '../../widgets/room_card.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final Property property;
@@ -38,9 +39,19 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     });
   }
 
+  void _showAddRoomForm() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const AddRoomForm(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final roomProvider = Provider.of<RoomProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isAdmin = authProvider.currentUser?.role == 'admin';
 
     return Scaffold(
       appBar: AppBar(
@@ -48,24 +59,40 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         foregroundColor: Colors.white,
         title: Text(widget.property.name),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            color: AppColors.grey100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildTab('Details'),
-                _buildTab('Rooms'),
-              ],
+          Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                color: AppColors.grey100,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTab('Details'),
+                    _buildTab('Rooms'),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _activeTab == 'Details'
+                    ? _buildDetailsTab()
+                    : _buildRoomsTab(roomProvider),
+              ),
+            ],
+          ),
+          // Show FAB only when in Rooms tab and user is admin
+          if (isAdmin && _activeTab == 'Rooms')
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                heroTag: 'add_room_fab',
+                backgroundColor: AppColors.primaryBlue,
+                onPressed: _showAddRoomForm,
+                child: const Icon(Icons.add),
+              ),
             ),
-          ),
-          Expanded(
-            child: _activeTab == 'Details'
-                ? _buildDetailsTab()
-                : _buildRoomsTab(roomProvider),
-          ),
         ],
       ),
     );
@@ -197,7 +224,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 }
-
 
 
 

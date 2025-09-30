@@ -60,6 +60,22 @@ class Property {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      'address': address,
+      'description': description,
+      'images': images,
+      'status': status,
+      'occupiedUnits': unitsOccupied,
+      'totalUnits': totalUnits,
+      'occupancyRate': occupancy,
+      'monthlyIncome': monthlyIncome,
+      'amenities': amenities,
+    };
+  }
+
   // Getter for first image to maintain compatibility with PropertyCard
   String get image => images.isNotEmpty ? images[0] : 'https://via.placeholder.com/150';
 
@@ -91,7 +107,6 @@ class Property {
     );
   }
 }
-
 
 
 

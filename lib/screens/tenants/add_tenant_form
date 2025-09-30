@@ -4,6 +4,7 @@ import '../../constants/colors.dart';
 import '../../models/tenant.dart';
 import '../../providers/tenant_provider.dart';
 import '../../providers/property_provider.dart';
+import '../../providers/room_provider.dart';
 
 class AddTenantForm extends StatefulWidget {
   const AddTenantForm({super.key});
@@ -30,6 +31,7 @@ class _AddTenantFormState extends State<AddTenantForm> {
   final TextEditingController _notesController = TextEditingController();
   String? _selectedPropertyId;
   String _status = 'paid';
+  String? _selectedRoomId;
 
   @override
   void dispose() {
@@ -68,6 +70,7 @@ class _AddTenantFormState extends State<AddTenantForm> {
   Widget build(BuildContext context) {
     final propertyProvider = Provider.of<PropertyProvider>(context);
     final tenantProvider = Provider.of<TenantProvider>(context);
+    final roomProvider = Provider.of<RoomProvider>(context);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -151,9 +154,37 @@ class _AddTenantFormState extends State<AddTenantForm> {
                 onChanged: (value) {
                   setState(() {
                     _selectedPropertyId = value;
+                    _selectedRoomId = null;
                   });
+                  if (value != null) {
+                    Provider.of<RoomProvider>(context, listen: false)
+                        .fetchRoomsByProperty(context, value);
+                  }
                 },
                 validator: (value) => value == null ? 'Please select a property' : null,
+              ),
+              // const SizedBox(height: 12),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _selectedRoomId,
+                decoration: InputDecoration(
+                  labelText: 'Room (Optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.grey50,
+                ),
+                items: roomProvider.rooms
+                    .where((room) => room.isAvailable)
+                    .map((room) => DropdownMenuItem(
+                          value: room.id,
+                          child: Text('Room ${room.roomNumber}'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRoomId = value;
+                  });
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -313,6 +344,7 @@ class _AddTenantFormState extends State<AddTenantForm> {
                       'phone': _phoneController.text,
                       'unit': _unitController.text,
                       'property': _selectedPropertyId,
+                       'room': _selectedRoomId,
                       'rentAmount': double.parse(_rentAmountController.text),
                       'securityDeposit': double.parse(_securityDepositController.text),
                       'leaseStartDate': _leaseStartDateController.text,

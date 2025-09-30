@@ -113,13 +113,14 @@ class TenantAdapter extends TypeAdapter<Tenant> {
       isActive: fields[13] as bool,
       emergencyContact: fields[14] as EmergencyContact,
       notes: fields[15] as String?,
+      room: fields[16] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Tenant obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -151,7 +152,9 @@ class TenantAdapter extends TypeAdapter<Tenant> {
       ..writeByte(14)
       ..write(obj.emergencyContact)
       ..writeByte(15)
-      ..write(obj.notes);
+      ..write(obj.notes)
+      ..writeByte(16)
+      ..write(obj.room);
   }
 
   @override

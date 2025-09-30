@@ -1,5 +1,6 @@
 import 'package:Peeman/constants/colors.dart';
 import 'package:Peeman/models/room_model.dart';
+import 'package:Peeman/screens/properties/rooms/room_detail_screen.dart';
 import 'package:flutter/material.dart';
 
 

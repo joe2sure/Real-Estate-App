@@ -2,11 +2,16 @@ import 'package:Peeman/screens/properties/add_property.dart';
 import 'package:Peeman/screens/properties/rooms/add_room_form.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
-// import 'add_property.dart';
-// import 'add_room_form.dart';
 
 class FloatingActionButtonWidget extends StatefulWidget {
-  const FloatingActionButtonWidget({super.key});
+  final VoidCallback? onPressed;
+  final bool showExpandable;
+
+  const FloatingActionButtonWidget({
+    super.key,
+    this.onPressed,
+    this.showExpandable = false,
+  });
 
   @override
   State<FloatingActionButtonWidget> createState() => _FloatingActionButtonWidgetState();
@@ -39,6 +44,17 @@ class _FloatingActionButtonWidgetState extends State<FloatingActionButtonWidget>
 
   @override
   Widget build(BuildContext context) {
+    // If onPressed callback is provided, use simple FAB
+    if (widget.onPressed != null) {
+      return FloatingActionButton(
+        heroTag: 'simple_fab',
+        backgroundColor: AppColors.primaryBlue,
+        onPressed: widget.onPressed,
+        child: const Icon(Icons.add),
+      );
+    }
+
+    // Otherwise, use expandable FAB with property/room options
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

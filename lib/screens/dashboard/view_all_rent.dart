@@ -1,7 +1,5 @@
 import 'package:Peeman/models/due_rent_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/due_rent_provider.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';

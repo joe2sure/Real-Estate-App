@@ -6,24 +6,24 @@ import 'package:Peeman/services/due_rent_service.dart';
 
 enum DueRentState { idle, loading, error }
 class DueRentProvider with ChangeNotifier {
-  final DueRentService _service = DueRentService(); // Remove asterisk
-  List<DueRentModel> _tenants = []; // Remove asterisk and make private
-  DueRentState _state = DueRentState.idle; // Remove asterisk and make private
-  String? _errorMessage; // Remove asterisk and make private
+  final DueRentService _service = DueRentService(); 
+  List<DueRentModel> _tenants = []; 
+  DueRentState _state = DueRentState.idle; 
+  String? _errorMessage; 
 
-  List<DueRentModel> get tenants => _tenants; // Remove asterisk
-  DueRentState get state => _state; // Remove asterisk
-  String? get errorMessage => _errorMessage; // Remove asterisk
-  bool get isLoading => _state == DueRentState.loading; // Remove asterisk
+  List<DueRentModel> get tenants => _tenants; 
+  DueRentState get state => _state; 
+  String? get errorMessage => _errorMessage; 
+  bool get isLoading => _state == DueRentState.loading; 
 
   Future<void> loadTenants({required BuildContext context}) async {
     debugPrint('[DueRentProvider] Starting loadTenants');
-    _state = DueRentState.loading; // Remove asterisk
-    _errorMessage = null; // Remove asterisk
+    _state = DueRentState.loading; 
+    _errorMessage = null; 
     notifyListeners();
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false); // Remove asterisk
+      final authProvider = Provider.of<AuthProvider>(context, listen: false); 
       final token = authProvider.token;
 
       if (token == null) {
@@ -32,7 +32,7 @@ class DueRentProvider with ChangeNotifier {
 
       debugPrint('[DueRentProvider] Fetching due rents using token: $token');
 
-      final fetched = await _service.fetchDueRent(token); // Remove asterisk
+      final fetched = await _service.fetchDueRent(token); 
       print("see fetched");
       print(fetched);
       debugPrint('[DueRentProvider] Fetched tenants: ${fetched.length}');
@@ -42,12 +42,12 @@ class DueRentProvider with ChangeNotifier {
             '[DueRentProvider] Tenant: ${tenant.firstName} ${tenant.lastName}, Status: ${tenant.status}');
       }
 
-      _tenants = fetched; // Remove asterisk
-      _state = DueRentState.idle; // Remove asterisk
+      _tenants = fetched; 
+      _state = DueRentState.idle; 
       notifyListeners();
     } catch (error) {
       debugPrint('[DueRentProvider] Error fetching due rents: $error');
-      _state = DueRentState.error; // Remove asterisk
+      _state = DueRentState.error; 
       _errorMessage = error.toString();
       notifyListeners();
     }

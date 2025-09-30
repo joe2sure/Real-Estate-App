@@ -764,6 +764,4 @@ color: isActive ? Colors.white : Colors.transparent,
       ),
     );
   }
-
-
 }

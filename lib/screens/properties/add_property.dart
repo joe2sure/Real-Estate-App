@@ -49,16 +49,6 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
     debugPrint('AddPropertyForm: Removed amenity: $amenity');
   }
 
-  // Future<void> _pickImages() async {
-  //   final picker = ImagePicker();
-  //   final pickedFiles = await picker.pickMultiImage();
-  //   setState(() {
-  //     _imagePaths = pickedFiles.map((file) => file.path).toList();
-  //     _imageUrls.clear();
-  //   });
-  //   debugPrint('AddPropertyForm: Picked images: $_imagePaths');
-  // }
-
   Future<void> _pickImages() async {
     final cameraStatus = await Permission.camera.request();
     final storageStatus = await Permission.storage.request();
@@ -461,6 +451,16 @@ class _AddPropertyFormState extends State<AddPropertyForm> {
   }
 }
 
+
+  // Future<void> _pickImages() async {
+  //   final picker = ImagePicker();
+  //   final pickedFiles = await picker.pickMultiImage();
+  //   setState(() {
+  //     _imagePaths = pickedFiles.map((file) => file.path).toList();
+  //     _imageUrls.clear();
+  //   });
+  //   debugPrint('AddPropertyForm: Picked images: $_imagePaths');
+  // }
 
 
 

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../constants/colors.dart';
 import '../../models/property_model.dart';
-import '../../providers/property_provider.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final Property property;
@@ -20,22 +17,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     super.initState();
    // _fetchProperty();
   }
-/*
-  Future<void> _fetchProperty() async {
-    try {
-      final property = await Provider.of<PropertyProvider>(context, listen: false)
-          .fetchPropertyById(context, widget.propertyId);
-      setState(() {
-        _property = property;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed to load property: $e')));
-    }
-  }
-*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,3 +116,22 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 }
+
+
+
+/*
+  Future<void> _fetchProperty() async {
+    try {
+      final property = await Provider.of<PropertyProvider>(context, listen: false)
+          .fetchPropertyById(context, widget.propertyId);
+      setState(() {
+        _property = property;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to load property: $e')));
+    }
+  }
+*/

@@ -34,13 +34,18 @@ class PaymentAdapter extends TypeAdapter<Payment> {
       updatedAt: fields[14] as DateTime,
       totalAmount: fields[15] as double,
       isLate: fields[16] as bool,
+      currency: fields[17] as String,
+      paymentType: fields[18] as String,
+      room: fields[19] as PaymentRoom?,
+      startDate: fields[20] as DateTime?,
+      endDate: fields[21] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Payment obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +79,17 @@ class PaymentAdapter extends TypeAdapter<Payment> {
       ..writeByte(15)
       ..write(obj.totalAmount)
       ..writeByte(16)
-      ..write(obj.isLate);
+      ..write(obj.isLate)
+      ..writeByte(17)
+      ..write(obj.currency)
+      ..writeByte(18)
+      ..write(obj.paymentType)
+      ..writeByte(19)
+      ..write(obj.room)
+      ..writeByte(20)
+      ..write(obj.startDate)
+      ..writeByte(21)
+      ..write(obj.endDate);
   }
 
   @override
@@ -173,6 +188,43 @@ class PaymentPropertyAdapter extends TypeAdapter<PaymentProperty> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PaymentPropertyAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class PaymentRoomAdapter extends TypeAdapter<PaymentRoom> {
+  @override
+  final int typeId = 24;
+
+  @override
+  PaymentRoom read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return PaymentRoom(
+      id: fields[0] as String,
+      roomNumber: fields[1] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, PaymentRoom obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.roomNumber);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PaymentRoomAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

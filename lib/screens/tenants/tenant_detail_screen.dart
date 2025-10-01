@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -31,13 +30,19 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
   final TextEditingController _rentAmountController = TextEditingController();
-  final TextEditingController _securityDepositController = TextEditingController();
-  final TextEditingController _leaseStartDateController = TextEditingController();
+  final TextEditingController _securityDepositController =
+      TextEditingController();
+  final TextEditingController _leaseStartDateController =
+      TextEditingController();
   final TextEditingController _leaseEndDateController = TextEditingController();
-  final TextEditingController _nextPaymentDueController = TextEditingController();
-  final TextEditingController _emergencyNameController = TextEditingController();
-  final TextEditingController _emergencyPhoneController = TextEditingController();
-  final TextEditingController _emergencyRelationshipController = TextEditingController();
+  final TextEditingController _nextPaymentDueController =
+      TextEditingController();
+  final TextEditingController _emergencyNameController =
+      TextEditingController();
+  final TextEditingController _emergencyPhoneController =
+      TextEditingController();
+  final TextEditingController _emergencyRelationshipController =
+      TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _reminderController = TextEditingController();
   String? _selectedPropertyId;
@@ -53,6 +58,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
 
   Future<void> _fetchTenant() async {
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final tenant = await Provider.of<TenantProvider>(context, listen: false)
           .fetchTenantById(context, widget.tenantId);
       setState(() {
@@ -64,12 +70,16 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         _unitController.text = tenant.unit;
         _rentAmountController.text = tenant.rentAmount.toString();
         _securityDepositController.text = tenant.securityDeposit.toString();
-        _leaseStartDateController.text = tenant.leaseStartDate.toIso8601String().split('T')[0];
-        _leaseEndDateController.text = tenant.leaseEndDate.toIso8601String().split('T')[0];
-        _nextPaymentDueController.text = tenant.nextPaymentDue.toIso8601String().split('T')[0];
+        _leaseStartDateController.text =
+            tenant.leaseStartDate.toIso8601String().split('T')[0];
+        _leaseEndDateController.text =
+            tenant.leaseEndDate.toIso8601String().split('T')[0];
+        _nextPaymentDueController.text =
+            tenant.nextPaymentDue.toIso8601String().split('T')[0];
         _emergencyNameController.text = tenant.emergencyContact.name;
         _emergencyPhoneController.text = tenant.emergencyContact.phone;
-        _emergencyRelationshipController.text = tenant.emergencyContact.relationship;
+        _emergencyRelationshipController.text =
+            tenant.emergencyContact.relationship;
         _notesController.text = tenant.notes ?? '';
         _selectedPropertyId = tenant.property.id;
         _status = tenant.status;
@@ -77,17 +87,19 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
       });
       if (_selectedPropertyId != null) {
         await Provider.of<RoomProvider>(context, listen: false)
-            .fetchRoomsByProperty(context, _selectedPropertyId!);
+            .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
       }
     } catch (error) {
       setState(() {
         _isLoading = false;
       });
-      CustomToast.show(context, 'Failed to load tenant: $error', isSuccess: false);
+      CustomToast.show(context, 'Failed to load tenant: $error',
+          isSuccess: false);
     }
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -125,7 +137,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
       };
       await Provider.of<TenantProvider>(context, listen: false)
           .updateTenant(context, widget.tenantId, tenantData);
-      if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+      if (Provider.of<TenantProvider>(context, listen: false).state ==
+          TenantState.error) {
         CustomToast.show(
             context,
             Provider.of<TenantProvider>(context, listen: false).errorMessage ??
@@ -154,14 +167,17 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.red500)),
+            child:
+                const Text('Delete', style: TextStyle(color: AppColors.red500)),
           ),
         ],
       ),
     );
     if (confirm == true) {
-      await Provider.of<TenantProvider>(context, listen: false).deleteTenant(context, widget.tenantId);
-      if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+      await Provider.of<TenantProvider>(context, listen: false)
+          .deleteTenant(context, widget.tenantId);
+      if (Provider.of<TenantProvider>(context, listen: false).state ==
+          TenantState.error) {
         CustomToast.show(
             context,
             Provider.of<TenantProvider>(context, listen: false).errorMessage ??
@@ -180,7 +196,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         : _reminderController.text;
     await Provider.of<TenantProvider>(context, listen: false)
         .sendPaymentReminder(context, widget.tenantId, message);
-    if (Provider.of<TenantProvider>(context, listen: false).state == TenantState.error) {
+    if (Provider.of<TenantProvider>(context, listen: false).state ==
+        TenantState.error) {
       CustomToast.show(
           context,
           Provider.of<TenantProvider>(context, listen: false).errorMessage ??
@@ -197,14 +214,20 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
       CustomToast.show(context, 'Please select a room', isSuccess: false);
       return;
     }
-    await Provider.of<RoomProvider>(context, listen: false)
-        .assignTenantToRoom(context, _selectedRoomId!, widget.tenantId);
-    if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+
+    // Get the AuthProvider instance
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Pass token as first parameter
+    await Provider.of<RoomProvider>(context, listen: false).assignTenantToRoom(
+        authProvider.token!, _selectedRoomId!, widget.tenantId);
+
+    if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
+        null) {
       CustomToast.show(context, 'Tenant assigned to room successfully');
       _fetchTenant();
     } else {
-      CustomToast.show(
-          context,
+      CustomToast.show(context,
           Provider.of<RoomProvider>(context, listen: false).errorMessage!,
           isSuccess: false);
     }
@@ -212,14 +235,17 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
 
   Future<void> _removeTenantFromRoom() async {
     if (_tenant!.room == null) {
-      CustomToast.show(context, 'Tenant is not assigned to any room', isSuccess: false);
+      CustomToast.show(context, 'Tenant is not assigned to any room',
+          isSuccess: false);
       return;
     }
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Tenant from Room'),
-        content: const Text('Are you sure you want to remove this tenant from their room?'),
+        content: const Text(
+            'Are you sure you want to remove this tenant from their room?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -227,25 +253,87 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove', style: TextStyle(color: AppColors.red500)),
+            child:
+                const Text('Remove', style: TextStyle(color: AppColors.red500)),
           ),
         ],
       ),
     );
+
     if (confirm == true) {
+      // Get the AuthProvider instance
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Pass token as first parameter
       await Provider.of<RoomProvider>(context, listen: false)
-          .removeTenantFromRoom(context, _tenant!.room!);
-      if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+          .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
+
+      if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
+          null) {
         CustomToast.show(context, 'Tenant removed from room successfully');
         _fetchTenant();
       } else {
-        CustomToast.show(
-            context,
+        CustomToast.show(context,
             Provider.of<RoomProvider>(context, listen: false).errorMessage!,
             isSuccess: false);
       }
     }
   }
+
+  // Future<void> _assignTenantToRoom() async {
+  //   if (_selectedRoomId == null) {
+  //     CustomToast.show(context, 'Please select a room', isSuccess: false);
+  //     return;
+  //   }
+  //   await Provider.of<RoomProvider>(context, listen: false)
+  //       .assignTenantToRoom(authProvider.token!, _selectedRoomId!, widget.tenantId);
+  //   if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+  //     CustomToast.show(context, 'Tenant assigned to room successfully');
+  //     _fetchTenant();
+  //   } else {
+  //     CustomToast.show(
+  //         context,
+  //         Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //         isSuccess: false);
+  //   }
+  // }
+
+  // Future<void> _removeTenantFromRoom() async {
+  //   if (_tenant!.room == null) {
+  //     CustomToast.show(context, 'Tenant is not assigned to any room', isSuccess: false);
+  //     return;
+  //   }
+  //   final confirm = await showDialog<bool>(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Remove Tenant from Room'),
+  //       content: const Text('Are you sure you want to remove this tenant from their room?'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, false),
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, true),
+  //           child: const Text('Remove', style: TextStyle(color: AppColors.red500)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //   if (confirm == true) {
+  //     await Provider.of<RoomProvider>(context, listen: false)
+  //         .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
+  //     if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+  //       CustomToast.show(context, 'Tenant removed from room successfully');
+  //       _fetchTenant();
+  //     } else {
+  //       CustomToast.show(
+  //           context,
+  //           Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //           isSuccess: false);
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +348,9 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         title: Text(
-          _tenant != null ? '${_tenant!.firstName} ${_tenant!.lastName}' : 'Tenant Details',
+          _tenant != null
+              ? '${_tenant!.firstName} ${_tenant!.lastName}'
+              : 'Tenant Details',
           style: const TextStyle(color: Colors.black),
         ),
         centerTitle: true,
@@ -301,53 +391,66 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                 controller: _firstNameController,
                                 decoration: InputDecoration(
                                   labelText: 'First Name',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter first name' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter first name'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _lastNameController,
                                 decoration: InputDecoration(
                                   labelText: 'Last Name',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter last name' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter last name'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _emailController,
                                 decoration: InputDecoration(
                                   labelText: 'Email',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 keyboardType: TextInputType.emailAddress,
-                                validator: (value) => value!.isEmpty ? 'Please enter email' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter email'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _phoneController,
                                 decoration: InputDecoration(
                                   labelText: 'Phone Number',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 keyboardType: TextInputType.phone,
-                                validator: (value) => value!.isEmpty ? 'Please enter phone number' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter phone number'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
                                 value: _selectedPropertyId,
                                 decoration: InputDecoration(
                                   labelText: 'Property',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -362,19 +465,24 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     _selectedPropertyId = value;
                                     _selectedRoomId = null;
                                     if (value != null) {
-                                      Provider.of<RoomProvider>(context, listen: false)
-                                          .fetchRoomsByProperty(context, value);
+                                      Provider.of<RoomProvider>(context,
+                                              listen: false)
+                                          .fetchRoomsByProperty(
+                                              authProvider.token!, value);
                                     }
                                   });
                                 },
-                                validator: (value) => value == null ? 'Please select a property' : null,
+                                validator: (value) => value == null
+                                    ? 'Please select a property'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
                                 value: _selectedRoomId,
                                 decoration: InputDecoration(
                                   labelText: 'Room (Optional)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -382,7 +490,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     .where((room) => room.isAvailable)
                                     .map((room) => DropdownMenuItem(
                                           value: room.id,
-                                          child: Text('Room ${room.roomNumber}'),
+                                          child:
+                                              Text('Room ${room.roomNumber}'),
                                         ))
                                     .toList(),
                                 onChanged: (value) {
@@ -396,134 +505,169 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                 controller: _unitController,
                                 decoration: InputDecoration(
                                   labelText: 'Unit Number',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter unit number' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter unit number'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _rentAmountController,
                                 decoration: InputDecoration(
                                   labelText: 'Rent Amount',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 keyboardType: TextInputType.number,
-                                validator: (value) => value!.isEmpty ? 'Please enter rent amount' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter rent amount'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _securityDepositController,
                                 decoration: InputDecoration(
                                   labelText: 'Security Deposit',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 keyboardType: TextInputType.number,
-                                validator: (value) => value!.isEmpty ? 'Please enter security deposit' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter security deposit'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _leaseStartDateController,
                                 decoration: InputDecoration(
                                   labelText: 'Lease Start Date (YYYY-MM-DD)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 readOnly: true,
-                                onTap: () => _selectDate(context, _leaseStartDateController),
-                                validator: (value) => value!.isEmpty ? 'Please select lease start date' : null,
+                                onTap: () => _selectDate(
+                                    context, _leaseStartDateController),
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please select lease start date'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _leaseEndDateController,
                                 decoration: InputDecoration(
                                   labelText: 'Lease End Date (YYYY-MM-DD)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 readOnly: true,
-                                onTap: () => _selectDate(context, _leaseEndDateController),
-                                validator: (value) => value!.isEmpty ? 'Please select lease end date' : null,
+                                onTap: () => _selectDate(
+                                    context, _leaseEndDateController),
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please select lease end date'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _nextPaymentDueController,
                                 decoration: InputDecoration(
                                   labelText: 'Next Payment Due (YYYY-MM-DD)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 readOnly: true,
-                                onTap: () => _selectDate(context, _nextPaymentDueController),
-                                validator: (value) => value!.isEmpty ? 'Please select next payment due date' : null,
+                                onTap: () => _selectDate(
+                                    context, _nextPaymentDueController),
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please select next payment due date'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
                                 value: _status,
                                 decoration: InputDecoration(
                                   labelText: 'Payment Status',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 items: ['paid', 'overdue', 'pending']
-                                    .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                                    .map((status) => DropdownMenuItem(
+                                        value: status, child: Text(status)))
                                     .toList(),
                                 onChanged: (value) {
                                   setState(() {
                                     _status = value!;
                                   });
                                 },
-                                validator: (value) => value == null ? 'Please select a status' : null,
+                                validator: (value) => value == null
+                                    ? 'Please select a status'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _emergencyNameController,
                                 decoration: InputDecoration(
                                   labelText: 'Emergency Contact Name',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter emergency contact name' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter emergency contact name'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _emergencyPhoneController,
                                 decoration: InputDecoration(
                                   labelText: 'Emergency Contact Phone',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
                                 keyboardType: TextInputType.phone,
-                                validator: (value) => value!.isEmpty ? 'Please enter emergency contact phone' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter emergency contact phone'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _emergencyRelationshipController,
                                 decoration: InputDecoration(
                                   labelText: 'Emergency Contact Relationship',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter relationship' : null,
+                                validator: (value) => value!.isEmpty
+                                    ? 'Please enter relationship'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _notesController,
                                 decoration: InputDecoration(
                                   labelText: 'Notes (Optional)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -536,7 +680,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Card(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
                               color: Colors.blue[50],
                               elevation: 1,
                               child: Padding(
@@ -560,7 +705,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                               padding: const EdgeInsets.all(1),
                               decoration: BoxDecoration(
                                 color: Colors.blue[50],
-                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
                               ),
                               child: Row(
                                 children: [
@@ -573,23 +719,28 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                             const SizedBox(height: 12),
                             if (_activeTab == 'Main') _buildMainTab(),
                             if (_activeTab == 'other') _buildOtherTab(),
-                            if (_activeTab == 'emergency_info') _buildEmergencyTab(),
+                            if (_activeTab == 'emergency_info')
+                              _buildEmergencyTab(),
                             const SizedBox(height: 20),
                             Divider(color: Colors.blue[50]),
-                            _infoRow(label: 'Notes', value: _tenant!.notes ?? 'None'),
+                            _infoRow(
+                                label: 'Notes',
+                                value: _tenant!.notes ?? 'None'),
                             Divider(height: 40, color: Colors.blue[50]),
                             if (isAdmin) ...[
                               const SizedBox(height: 16),
                               const Text(
                                 'Room Assignment',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 value: _selectedPropertyId,
                                 decoration: InputDecoration(
                                   labelText: 'Property',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -604,8 +755,10 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     _selectedPropertyId = value;
                                     _selectedRoomId = null;
                                     if (value != null) {
-                                      Provider.of<RoomProvider>(context, listen: false)
-                                          .fetchRoomsByProperty(context, value);
+                                      Provider.of<RoomProvider>(context,
+                                              listen: false)
+                                          .fetchRoomsByProperty(
+                                              authProvider.token!, value);
                                     }
                                   });
                                 },
@@ -615,7 +768,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                 value: _selectedRoomId,
                                 decoration: InputDecoration(
                                   labelText: 'Room',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -623,7 +777,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     .where((room) => room.isAvailable)
                                     .map((room) => DropdownMenuItem(
                                           value: room.id,
-                                          child: Text('Room ${room.roomNumber}'),
+                                          child:
+                                              Text('Room ${room.roomNumber}'),
                                         ))
                                     .toList(),
                                 onChanged: (value) {
@@ -639,7 +794,10 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                                          colors: [
+                                            AppColors.primaryBlue,
+                                            AppColors.secondaryTeal
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -648,9 +806,13 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.transparent,
                                           shadowColor: Colors.transparent,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
                                         ),
-                                        child: const Text('Assign Room', style: TextStyle(color: Colors.white)),
+                                        child: const Text('Assign Room',
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ),
                                     ),
                                   ),
@@ -659,7 +821,10 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [AppColors.red500, AppColors.red600],
+                                          colors: [
+                                            AppColors.red500,
+                                            AppColors.red600
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -668,9 +833,13 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.transparent,
                                           shadowColor: Colors.transparent,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
                                         ),
-                                        child: const Text('Remove from Room', style: TextStyle(color: Colors.white)),
+                                        child: const Text('Remove from Room',
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ),
                                     ),
                                   ),
@@ -678,13 +847,16 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                               ),
                               const SizedBox(height: 16),
                               const Text('Send Payment Reminder',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600)),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _reminderController,
                                 decoration: InputDecoration(
                                   labelText: 'Reminder Message (Optional)',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
@@ -696,7 +868,10 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                 height: 48,
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [AppColors.primaryBlue, AppColors.secondaryTeal],
+                                    colors: [
+                                      AppColors.primaryBlue,
+                                      AppColors.secondaryTeal
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -705,9 +880,11 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
                                   ),
-                                  child: const Text('Send Reminder', style: TextStyle(color: Colors.white)),
+                                  child: const Text('Send Reminder',
+                                      style: TextStyle(color: Colors.white)),
                                 ),
                               ),
                             ],
@@ -770,7 +947,8 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isActive ? Colors.white : Colors.transparent,
-            border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 2),
+            border: Border.all(
+                color: isActive ? Colors.blue : Colors.transparent, width: 2),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
@@ -795,11 +973,13 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildMainRow(Icons.person, 'Full Name', '${_tenant!.firstName} ${_tenant!.lastName}'),
+            _buildMainRow(Icons.person, 'Full Name',
+                '${_tenant!.firstName} ${_tenant!.lastName}'),
             _buildMainRow(Icons.phone, 'Phone', '${_tenant!.phone}'),
             _buildMainRow(Icons.email, 'Email', '${_tenant!.email}'),
             _buildMainRow(Icons.verified_user, 'Status', '${_tenant!.status}'),
-            _buildMainRow(Icons.check_circle, 'Available', '${_tenant!.isActive}'),
+            _buildMainRow(
+                Icons.check_circle, 'Available', '${_tenant!.isActive}'),
           ],
         ),
       ),
@@ -818,15 +998,19 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
             const Divider(),
             _buildMainRow(Icons.apartment, 'Unit', '${_tenant!.unit}'),
             const Divider(),
-            _buildMainRow(Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
+            _buildMainRow(
+                Icons.attach_money, 'Rent Amount', '${_tenant!.rentAmount}'),
             const Divider(),
-            _buildMainRow(Icons.savings, 'Security Deposit', '${_tenant!.securityDeposit}'),
+            _buildMainRow(Icons.savings, 'Security Deposit',
+                '${_tenant!.securityDeposit}'),
             const Divider(),
-            _buildMainRow(Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
+            _buildMainRow(
+                Icons.date_range, 'Lease Start', '${_tenant!.leaseStartDate}'),
             const Divider(),
             _buildMainRow(Icons.event, 'Lease End', '${_tenant!.leaseEndDate}'),
             const Divider(),
-            _buildMainRow(Icons.calendar_today, 'Next Payment Date', '${_tenant!.nextPaymentDue}'),
+            _buildMainRow(Icons.calendar_today, 'Next Payment Date',
+                '${_tenant!.nextPaymentDue}'),
           ],
         ),
       ),
@@ -841,11 +1025,14 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildMainRow(Icons.person, 'Name', '${_tenant!.emergencyContact.name}'),
+            _buildMainRow(
+                Icons.person, 'Name', '${_tenant!.emergencyContact.name}'),
             const Divider(),
-            _buildMainRow(Icons.phone, 'Number', '${_tenant!.emergencyContact.phone}'),
+            _buildMainRow(
+                Icons.phone, 'Number', '${_tenant!.emergencyContact.phone}'),
             const Divider(),
-            _buildMainRow(Icons.family_restroom, 'Relationship', '${_tenant!.emergencyContact.relationship}'),
+            _buildMainRow(Icons.family_restroom, 'Relationship',
+                '${_tenant!.emergencyContact.relationship}'),
           ],
         ),
       ),

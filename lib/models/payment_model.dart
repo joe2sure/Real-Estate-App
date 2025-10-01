@@ -55,6 +55,21 @@ class Payment extends HiveObject {
   
   @HiveField(16)
   final bool isLate;
+  
+  @HiveField(17)
+  final String currency;
+  
+  @HiveField(18)
+  final String paymentType;
+  
+  @HiveField(19)
+  final PaymentRoom? room;
+  
+  @HiveField(20)
+  final DateTime? startDate;
+  
+  @HiveField(21)
+  final DateTime? endDate;
 
   Payment({
     required this.id,
@@ -74,6 +89,11 @@ class Payment extends HiveObject {
     required this.updatedAt,
     required this.totalAmount,
     required this.isLate,
+    required this.currency,
+    required this.paymentType,
+    this.room,
+    this.startDate,
+    this.endDate,
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) {
@@ -95,8 +115,15 @@ class Payment extends HiveObject {
           : null,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      totalAmount: (json['amount'] as num).toDouble() + 
+                   ((json['lateFee'] as num?)?.toDouble() ?? 0.0) - 
+                   ((json['discount'] as num?)?.toDouble() ?? 0.0),
       isLate: json['isLate'] as bool? ?? false,
+      currency: json['currency'] as String? ?? 'USD',
+      paymentType: json['paymentType'] as String? ?? 'full',
+      room: json['room'] != null ? PaymentRoom.fromJson(json['room']) : null,
+      startDate: json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
+      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
     );
   }
 
@@ -119,6 +146,11 @@ class Payment extends HiveObject {
       'updatedAt': updatedAt.toIso8601String(),
       'totalAmount': totalAmount,
       'isLate': isLate,
+      'currency': currency,
+      'paymentType': paymentType,
+      'room': room?.toJson(),
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
     };
   }
 }
@@ -211,6 +243,34 @@ class PaymentProperty extends HiveObject {
   }
 }
 
+@HiveType(typeId: HiveTypeIds.paymentRoom)
+class PaymentRoom extends HiveObject {
+  @HiveField(0)
+  final String id;
+  
+  @HiveField(1)
+  final String roomNumber;
+
+  PaymentRoom({
+    required this.id,
+    required this.roomNumber,
+  });
+
+  factory PaymentRoom.fromJson(Map<String, dynamic> json) {
+    return PaymentRoom(
+      id: json['_id'] as String,
+      roomNumber: json['roomNumber'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'roomNumber': roomNumber,
+    };
+  }
+}
+
 @HiveType(typeId: HiveTypeIds.paymentProcessor)
 class PaymentProcessor extends HiveObject {
   @HiveField(0)
@@ -237,7 +297,7 @@ class PaymentProcessor extends HiveObject {
       id: json['_id'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
-      email: json['email'] as String,
+      email: json['email'] as String? ?? '',
     );
   }
 
@@ -253,25 +313,30 @@ class PaymentProcessor extends HiveObject {
   String get fullName => '$firstName $lastName';
 }
 
-// Non-Hive models (no typeId needed)
+// Non-Hive models (API responses)
 class PaymentSummary {
-  final double totalRevenue;
-  final List<MonthlyRevenue> monthlyRevenue;
-  final OutstandingPayments outstandingPayments;
+  final int totalPayments;
+  final int completedPayments;
+  final int pendingPayments;
+  final Map<String, double> revenue;
 
   PaymentSummary({
-    required this.totalRevenue,
-    required this.monthlyRevenue,
-    required this.outstandingPayments,
+    required this.totalPayments,
+    required this.completedPayments,
+    required this.pendingPayments,
+    required this.revenue,
   });
 
   factory PaymentSummary.fromJson(Map<String, dynamic> json) {
     return PaymentSummary(
-      totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      monthlyRevenue: (json['monthlyRevenue'] as List)
-          .map((item) => MonthlyRevenue.fromJson(item))
-          .toList(),
-      outstandingPayments: OutstandingPayments.fromJson(json['outstandingPayments']),
+      totalPayments: json['totalPayments'] as int,
+      completedPayments: json['completedPayments'] as int,
+      pendingPayments: json['pendingPayments'] as int,
+      revenue: {
+        'USD': (json['revenue']['USD'] as num?)?.toDouble() ?? 0.0,
+        'GBP': (json['revenue']['GBP'] as num?)?.toDouble() ?? 0.0,
+        'NGN': (json['revenue']['NGN'] as num?)?.toDouble() ?? 0.0,
+      },
     );
   }
 }
@@ -340,11 +405,13 @@ class PaymentIntent {
 
 
 
+
 // import 'package:hive/hive.dart';
+// import '../hive/type_ids.dart';
 
 // part 'payment_model.g.dart';
 
-// @HiveType(typeId: 4)
+// @HiveType(typeId: HiveTypeIds.payment)
 // class Payment extends HiveObject {
 //   @HiveField(0)
 //   final String id;
@@ -464,7 +531,7 @@ class PaymentIntent {
 //   }
 // }
 
-// @HiveType(typeId: 5)
+// @HiveType(typeId: HiveTypeIds.paymentTenant)
 // class PaymentTenant extends HiveObject {
 //   @HiveField(0)
 //   final String id;
@@ -518,7 +585,7 @@ class PaymentIntent {
 //   String get fullName => '$firstName $lastName';
 // }
 
-// @HiveType(typeId: 6)
+// @HiveType(typeId: HiveTypeIds.paymentProperty)
 // class PaymentProperty extends HiveObject {
 //   @HiveField(0)
 //   final String id;
@@ -552,7 +619,7 @@ class PaymentIntent {
 //   }
 // }
 
-// @HiveType(typeId: 7)
+// @HiveType(typeId: HiveTypeIds.paymentProcessor)
 // class PaymentProcessor extends HiveObject {
 //   @HiveField(0)
 //   final String id;
@@ -594,6 +661,7 @@ class PaymentIntent {
 //   String get fullName => '$firstName $lastName';
 // }
 
+// // Non-Hive models (no typeId needed)
 // class PaymentSummary {
 //   final double totalRevenue;
 //   final List<MonthlyRevenue> monthlyRevenue;

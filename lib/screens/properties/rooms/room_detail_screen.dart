@@ -28,8 +28,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
 
   Future<void> _fetchRoom() async {
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final room = await Provider.of<RoomProvider>(context, listen: false)
-          .fetchRoomById(context, widget.roomId);
+          .fetchRoomById(authProvider.token!, widget.roomId);
       setState(() {
         _room = room;
         _isLoading = false;
@@ -61,7 +62,8 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
       ),
     );
     if (confirm == true) {
-      await Provider.of<RoomProvider>(context, listen: false).deleteRoom(context, widget.roomId);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await Provider.of<RoomProvider>(context, listen: false).deleteRoom(authProvider.token!, widget.roomId);
       if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
         Navigator.pop(context);
         CustomToast.show(context, 'Room deleted successfully');

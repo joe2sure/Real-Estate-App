@@ -28,12 +28,24 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     }
   }
 
+  // Future<void> _fetchRooms() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   await Provider.of<RoomProvider>(context, listen: false)
+  //       .fetchRoomsByProperty(context, widget.property.id);
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
+
   Future<void> _fetchRooms() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     setState(() {
       _isLoading = true;
     });
     await Provider.of<RoomProvider>(context, listen: false)
-        .fetchRoomsByProperty(context, widget.property.id);
+        .fetchRoomsByProperty(authProvider.token!, widget.property.id);
     setState(() {
       _isLoading = false;
     });
@@ -160,7 +172,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(widget.property.address, style: const TextStyle(color: Colors.black87)),
+          Text(widget.property.address,
+              style: const TextStyle(color: Colors.black87)),
           const SizedBox(height: 12),
           Text(
             widget.property.description,
@@ -168,13 +181,17 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           ),
           const Divider(height: 30, color: Colors.black),
           _infoRow('Status', widget.property.status),
-          _infoRow('Units Occupied', '${widget.property.unitsOccupied}/${widget.property.totalUnits}'),
-          _infoRow('Occupancy', '${widget.property.occupancy.toStringAsFixed(1)}%'),
-          _infoRow('Monthly Income', '\$${widget.property.monthlyIncome.toStringAsFixed(2)}'),
+          _infoRow('Units Occupied',
+              '${widget.property.unitsOccupied}/${widget.property.totalUnits}'),
+          _infoRow(
+              'Occupancy', '${widget.property.occupancy.toStringAsFixed(1)}%'),
+          _infoRow('Monthly Income',
+              '\$${widget.property.monthlyIncome.toStringAsFixed(2)}'),
           const SizedBox(height: 20),
           const Text(
             'Amenities',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -182,7 +199,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
             runSpacing: 8,
             children: widget.property.amenities.map((amenity) {
               return Chip(
-                label: Text(amenity, style: const TextStyle(color: Colors.black)),
+                label:
+                    Text(amenity, style: const TextStyle(color: Colors.black)),
                 backgroundColor: Colors.grey[200],
               );
             }).toList(),
@@ -210,7 +228,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         children: [
           Text(
             '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.black),
           ),
           Expanded(
             child: Text(

@@ -17,16 +17,20 @@ class PaymentService {
         },
       );
 
+      debugPrint('📥 Get All Payments Status: ${response.statusCode}');
+      debugPrint('📥 Get All Payments Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          return (data['data'] as List)
-              .map((payment) => Payment.fromJson(payment))
-              .toList();
+          // API returns data.payments array
+          final paymentsData = data['data']['payments'] as List;
+          return paymentsData.map((payment) => Payment.fromJson(payment)).toList();
         }
       }
       throw Exception('Failed to fetch payments');
     } catch (e) {
+      debugPrint('❌ Error fetching payments: $e');
       throw Exception('Error fetching payments: $e');
     }
   }
@@ -41,16 +45,20 @@ class PaymentService {
         },
       );
 
+      debugPrint('📥 Recent Payments Status: ${response.statusCode}');
+      debugPrint('📥 Recent Payments Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          return (data['data'] as List)
-              .map((payment) => Payment.fromJson(payment))
-              .toList();
+          // API returns data.payments array
+          final paymentsData = data['data']['payments'] as List;
+          return paymentsData.map((payment) => Payment.fromJson(payment)).toList();
         }
       }
       throw Exception('Failed to fetch recent payments');
     } catch (e) {
+      debugPrint('❌ Error fetching recent payments: $e');
       throw Exception('Error fetching recent payments: $e');
     }
   }
@@ -65,14 +73,19 @@ class PaymentService {
         },
       );
 
+      debugPrint('📥 Payment Detail Status: ${response.statusCode}');
+      debugPrint('📥 Payment Detail Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          return Payment.fromJson(data['data']);
+          // API returns data.payment object
+          return Payment.fromJson(data['data']['payment']);
         }
       }
       throw Exception('Failed to fetch payment details');
     } catch (e) {
+      debugPrint('❌ Error fetching payment details: $e');
       throw Exception('Error fetching payment details: $e');
     }
   }
@@ -87,6 +100,9 @@ class PaymentService {
         },
       );
 
+      debugPrint('📥 Payment Summary Status: ${response.statusCode}');
+      debugPrint('📥 Payment Summary Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
@@ -95,109 +111,109 @@ class PaymentService {
       }
       throw Exception('Failed to fetch payment summary');
     } catch (e) {
+      debugPrint('❌ Error fetching payment summary: $e');
       throw Exception('Error fetching payment summary: $e');
     }
   }
 
-
-static Future<Payment> recordPayment(
+  static Future<Payment> recordPayment(
     String token,
     Map<String, dynamic> paymentData,
-) async {
-  final uri = Uri.parse('$_baseUrl/payments');
-  debugPrint('📤 POST $uri');
-  debugPrint('📦 Body: ${jsonEncode(paymentData)}');
+  ) async {
+    final uri = Uri.parse('$_baseUrl/payments');
+    debugPrint('📤 POST $uri');
+    debugPrint('📦 Body: ${jsonEncode(paymentData)}');
 
-  final response = await http.post(
-    uri,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(paymentData),
-  );
-
-  debugPrint('📥 Status: ${response.statusCode}');
-  debugPrint('📥 Body: ${response.body}');
-
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    final decoded = jsonDecode(response.body);
-    if (decoded['success'] == true && decoded['data'] != null) {
-      return Payment.fromJson(decoded['data']);
-    }
-  }
-
-  // **Forward the server message as-is** – no nested Exception()
-  final decoded = jsonDecode(response.body);
-  throw decoded['message'] ?? 'Unknown server error';
-}
-
-static Future<Payment> updatePayment(
-    String token,
-    String paymentId,
-    Map<String, dynamic> paymentData,
-) async {
-  final uri = Uri.parse('$_baseUrl/payments/$paymentId');
-  debugPrint('📤 PUT $uri');
-  debugPrint('📦 Body: ${jsonEncode(paymentData)}');
-
-  final response = await http.put(
-    uri,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(paymentData),
-  );
-
-  debugPrint('📥 Status: ${response.statusCode}');
-  debugPrint('📥 Body: ${response.body}');
-
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-    if (decoded['success'] == true && decoded['data'] != null) {
-      return Payment.fromJson(decoded['data']);
-    }
-  }
-
-  // **Forward the server message as-is** – no nested Exception()
-  final decoded = jsonDecode(response.body);
-  throw decoded['message'] ?? 'Unknown server error';
-}
-
-static Future<PaymentIntent> createPaymentIntent(String token, {
-  required double amount,
-  required String tenantId,
-  required String propertyId,
-}) async {
-  try {
     final response = await http.post(
-      Uri.parse('$_baseUrl/payments/create-intent'),
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'amount': amount, // Remove *100 if server expects dollars
-        'tenantId': tenantId,
-        'propertyId': propertyId,
-      }),
+      body: jsonEncode(paymentData),
     );
 
-    debugPrint('📥 Stripe Response: ${response.statusCode} - ${response.body}');
+    debugPrint('📥 Status: ${response.statusCode}');
+    debugPrint('📥 Body: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['success'] == true) {
-        return PaymentIntent.fromJson(data['data']);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final decoded = jsonDecode(response.body);
+      if (decoded['success'] == true && decoded['data'] != null) {
+        // API returns data.payment object
+        return Payment.fromJson(decoded['data']['payment']);
       }
     }
 
-    throw Exception(jsonDecode(response.body)['message'] ?? 'Stripe error');
-  } catch (e) {
-    throw Exception('Stripe payment failed: $e');
+    final decoded = jsonDecode(response.body);
+    throw decoded['message'] ?? 'Unknown server error';
   }
-}
+
+  static Future<Payment> updatePayment(
+    String token,
+    String paymentId,
+    Map<String, dynamic> paymentData,
+  ) async {
+    final uri = Uri.parse('$_baseUrl/payments/$paymentId');
+    debugPrint('📤 PUT $uri');
+    debugPrint('📦 Body: ${jsonEncode(paymentData)}');
+
+    final response = await http.put(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(paymentData),
+    );
+
+    debugPrint('📥 Status: ${response.statusCode}');
+    debugPrint('📥 Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      if (decoded['success'] == true && decoded['data'] != null) {
+        // API returns data.payment object
+        return Payment.fromJson(decoded['data']['payment']);
+      }
+    }
+
+    final decoded = jsonDecode(response.body);
+    throw decoded['message'] ?? 'Unknown server error';
+  }
+
+  static Future<PaymentIntent> createPaymentIntent(String token, {
+    required double amount,
+    required String tenantId,
+    required String propertyId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/payments/create-intent'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'amount': amount,
+          'tenantId': tenantId,
+          'propertyId': propertyId,
+        }),
+      );
+
+      debugPrint('📥 Stripe Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return PaymentIntent.fromJson(data['data']);
+        }
+      }
+
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Stripe error');
+    } catch (e) {
+      throw Exception('Stripe payment failed: $e');
+    }
+  }
 
   static Future<bool> deletePayment(String token, String paymentId) async {
     try {
@@ -209,8 +225,10 @@ static Future<PaymentIntent> createPaymentIntent(String token, {
         },
       );
 
+      debugPrint('📥 Delete Payment Status: ${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {
+      debugPrint('❌ Error deleting payment: $e');
       throw Exception('Error deleting payment: $e');
     }
   }
@@ -219,81 +237,235 @@ static Future<PaymentIntent> createPaymentIntent(String token, {
 
 
 
-  // static Future<Payment> updatePayment(String token, String paymentId, Map<String, dynamic> paymentData) async {
-  //   try {
-  //     final response = await http.put(
-  //       Uri.parse('$_baseUrl/payments/$paymentId'),
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       },
-  //       body: jsonEncode(paymentData),
-  //     );
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import '../constants/api.dart';
+// import '../models/payment_model.dart';
 
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       if (data['success']) {
-  //         return Payment.fromJson(data['data']);
-  //       }
-  //     }
-  //     throw Exception('Failed to update payment');
-  //   } catch (e) {
-  //     throw Exception('Error updating payment: $e');
-  //   }
-  // }
+// class PaymentService {
+//   static const String _baseUrl = 'https://peeman-mobile-app-backend.onrender.com/api/v1';
 
-  // static Future<PaymentIntent> createPaymentIntent(String token, {
-  //   required double amount,
-  //   required String tenantId,
-  //   required String propertyId,
-  // }) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('$_baseUrl/payments/create-intent'),
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       },
-  //       body: jsonEncode({
-  //         'amount': (amount * 100).toInt(), // Convert to cents
-  //         'tenantId': tenantId,
-  //         'propertyId': propertyId,
-  //       }),
-  //     );
+//   static Future<List<Payment>> getAllPayments(String token, {int page = 1, int limit = 10}) async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$_baseUrl/payments?page=$page&limit=$limit'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
 
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       if (data['success']) {
-  //         return PaymentIntent.fromJson(data['data']);
-  //       }
-  //     }
-  //     throw Exception('Failed to create payment intent');
-  //   } catch (e) {
-  //     throw Exception('Error creating payment intent: $e');
-  //   }
-  // }
+//       debugPrint('📥 Get All Payments Status: ${response.statusCode}');
+//       debugPrint('📥 Response: ${response.body}');
 
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['success']) {
+//           // The API returns data.payments array
+//           final paymentsJson = data['data']['payments'] as List;
+//           return paymentsJson.map((payment) => Payment.fromJson(payment)).toList();
+//         }
+//       }
+//       throw Exception('Failed to fetch payments');
+//     } catch (e) {
+//       debugPrint('❌ Error fetching payments: $e');
+//       throw Exception('Error fetching payments: $e');
+//     }
+//   }
 
+//   static Future<List<Payment>> getRecentPayments(String token) async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$_baseUrl/payments/recent'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
 
-  // static Future<Payment> recordPayment(String token, Map<String, dynamic> paymentData) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('$_baseUrl/payments'),
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       },
-  //       body: jsonEncode(paymentData),
-  //     );
+//       debugPrint('📥 Get Recent Payments Status: ${response.statusCode}');
+//       debugPrint('📥 Response: ${response.body}');
 
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       final data = jsonDecode(response.body);
-  //       if (data['success']) {
-  //         return Payment.fromJson(data['data']);
-  //       }
-  //     }
-  //     throw Exception('Failed to record payment');
-  //   } catch (e) {
-  //     throw Exception('Error recording payment: $e');
-  //   }
-  // }
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['success']) {
+//           // The API returns data.payments array
+//           final paymentsJson = data['data']['payments'] as List;
+//           return paymentsJson.map((payment) => Payment.fromJson(payment)).toList();
+//         }
+//       }
+//       throw Exception('Failed to fetch recent payments');
+//     } catch (e) {
+//       debugPrint('❌ Error fetching recent payments: $e');
+//       throw Exception('Error fetching recent payments: $e');
+//     }
+//   }
+
+//   static Future<Payment> getPaymentById(String token, String paymentId) async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$_baseUrl/payments/$paymentId'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
+
+//       debugPrint('📥 Get Payment By ID Status: ${response.statusCode}');
+
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['success']) {
+//           // API returns data.payment object
+//           return Payment.fromJson(data['data']['payment']);
+//         }
+//       }
+//       throw Exception('Failed to fetch payment details');
+//     } catch (e) {
+//       debugPrint('❌ Error fetching payment details: $e');
+//       throw Exception('Error fetching payment details: $e');
+//     }
+//   }
+
+//   static Future<PaymentSummary> getPaymentSummary(String token) async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$_baseUrl/payments/summary'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
+
+//       debugPrint('📥 Get Payment Summary Status: ${response.statusCode}');
+//       debugPrint('📥 Response: ${response.body}');
+
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['success']) {
+//           return PaymentSummary.fromJson(data['data']);
+//         }
+//       }
+//       throw Exception('Failed to fetch payment summary');
+//     } catch (e) {
+//       debugPrint('❌ Error fetching payment summary: $e');
+//       throw Exception('Error fetching payment summary: $e');
+//     }
+//   }
+
+//   static Future<Payment> recordPayment(
+//     String token,
+//     Map<String, dynamic> paymentData,
+//   ) async {
+//     final uri = Uri.parse('$_baseUrl/payments');
+//     debugPrint('📤 POST $uri');
+//     debugPrint('📦 Body: ${jsonEncode(paymentData)}');
+
+//     final response = await http.post(
+//       uri,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//       body: jsonEncode(paymentData),
+//     );
+
+//     debugPrint('📥 Status: ${response.statusCode}');
+//     debugPrint('📥 Body: ${response.body}');
+
+//     if (response.statusCode == 200 || response.statusCode == 201) {
+//       final decoded = jsonDecode(response.body);
+//       if (decoded['success'] == true && decoded['data'] != null) {
+//         // API returns data.payment object
+//         return Payment.fromJson(decoded['data']['payment']);
+//       }
+//     }
+
+//     final decoded = jsonDecode(response.body);
+//     throw decoded['message'] ?? 'Unknown server error';
+//   }
+
+//   static Future<Payment> updatePayment(
+//     String token,
+//     String paymentId,
+//     Map<String, dynamic> paymentData,
+//   ) async {
+//     final uri = Uri.parse('$_baseUrl/payments/$paymentId');
+//     debugPrint('📤 PUT $uri');
+//     debugPrint('📦 Body: ${jsonEncode(paymentData)}');
+
+//     final response = await http.put(
+//       uri,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//       body: jsonEncode(paymentData),
+//     );
+
+//     debugPrint('📥 Status: ${response.statusCode}');
+//     debugPrint('📥 Body: ${response.body}');
+
+//     if (response.statusCode == 200) {
+//       final decoded = jsonDecode(response.body);
+//       if (decoded['success'] == true && decoded['data'] != null) {
+//         // API returns data.payment object
+//         return Payment.fromJson(decoded['data']['payment']);
+//       }
+//     }
+
+//     final decoded = jsonDecode(response.body);
+//     throw decoded['message'] ?? 'Unknown server error';
+//   }
+
+//   static Future<PaymentIntent> createPaymentIntent(String token, {
+//     required double amount,
+//     required String tenantId,
+//     required String propertyId,
+//   }) async {
+//     try {
+//       final response = await http.post(
+//         Uri.parse('$_baseUrl/payments/create-intent'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//         body: jsonEncode({
+//           'amount': amount,
+//           'tenantId': tenantId,
+//           'propertyId': propertyId,
+//         }),
+//       );
+
+//       debugPrint('📥 Stripe Response: ${response.statusCode} - ${response.body}');
+
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['success'] == true) {
+//           return PaymentIntent.fromJson(data['data']);
+//         }
+//       }
+
+//       throw Exception(jsonDecode(response.body)['message'] ?? 'Stripe error');
+//     } catch (e) {
+//       throw Exception('Stripe payment failed: $e');
+//     }
+//   }
+
+//   static Future<bool> deletePayment(String token, String paymentId) async {
+//     try {
+//       final response = await http.delete(
+//         Uri.parse('$_baseUrl/payments/$paymentId'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
+
+//       return response.statusCode == 200;
+//     } catch (e) {
+//       throw Exception('Error deleting payment: $e');
+//     }
+//   }
+// }

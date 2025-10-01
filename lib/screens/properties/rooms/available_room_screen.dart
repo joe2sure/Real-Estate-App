@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/auth_provider.dart';
 import 'package:Peeman/providers/room_provider.dart';
 import 'package:Peeman/screens/properties/rooms/room_card.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,8 @@ class _AvailableRoomsScreenState extends State<AvailableRoomsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RoomProvider>(context, listen: false).fetchAvailableRooms(context);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      Provider.of<RoomProvider>(context, listen: false).fetchAvailableRooms(authProvider.token!);
     });
   }
 

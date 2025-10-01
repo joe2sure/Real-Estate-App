@@ -1,5 +1,6 @@
 import 'package:Peeman/constants/colors.dart';
 import 'package:Peeman/models/room_model.dart';
+import 'package:Peeman/providers/auth_provider.dart';
 import 'package:Peeman/providers/room_provider.dart';
 import 'package:Peeman/widgets/custom_toaster.dart';
 import 'package:flutter/material.dart';
@@ -189,6 +190,7 @@ class _UpdateRoomFormState extends State<UpdateRoomForm> {
                           ? null
                           : () async {
                               if (_formKey.currentState!.validate()) {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
                                 final roomData = {
                                   'roomNumber': _roomNumberController.text,
                                   'rentAmount': double.parse(_rentAmountController.text),
@@ -196,7 +198,7 @@ class _UpdateRoomFormState extends State<UpdateRoomForm> {
                                   'description': _descriptionController.text,
                                   'amenities': _amenities,
                                 };
-                                await roomProvider.updateRoom(context, widget.room.id, roomData);
+                                await roomProvider.updateRoom(authProvider.token!, widget.room.id, roomData);
                                 if (roomProvider.errorMessage == null) {
                                   CustomToast.show(context, 'Room updated successfully');
                                   Navigator.pop(context);

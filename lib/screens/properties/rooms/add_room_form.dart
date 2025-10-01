@@ -1,4 +1,5 @@
 import 'package:Peeman/constants/colors.dart';
+import 'package:Peeman/providers/auth_provider.dart';
 import 'package:Peeman/providers/property_provider.dart';
 import 'package:Peeman/providers/room_provider.dart';
 import 'package:Peeman/models/property_model.dart';
@@ -201,6 +202,7 @@ class _AddRoomFormState extends State<AddRoomForm> {
                           ? null
                           : () async {
                               if (_formKey.currentState!.validate()) {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
                                 final roomData = {
                                   'roomNumber': _roomNumberController.text,
                                   'property': _selectedPropertyId,
@@ -209,7 +211,7 @@ class _AddRoomFormState extends State<AddRoomForm> {
                                   'description': _descriptionController.text,
                                   'amenities': _amenities,
                                 };
-                                await roomProvider.createRoom(context, roomData);
+                                await roomProvider.createRoom(authProvider.token!, roomData);
                                 if (roomProvider.errorMessage == null) {
                                   CustomToast.show(context, 'Room created successfully');
                                   Navigator.pop(context);

@@ -1,3 +1,4 @@
+import 'package:Peeman/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
@@ -157,8 +158,12 @@ class _AddTenantFormState extends State<AddTenantForm> {
                     _selectedRoomId = null;
                   });
                   if (value != null) {
+                    final token = Provider.of<AuthProvider>(context, listen: false).token;
+
+                    if(token != null) {
                     Provider.of<RoomProvider>(context, listen: false)
-                        .fetchRoomsByProperty(context, value);
+                        .fetchRoomsByProperty(token, value);
+                    }
                   }
                 },
                 validator: (value) => value == null ? 'Please select a property' : null,

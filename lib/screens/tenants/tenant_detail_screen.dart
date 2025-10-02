@@ -1,3 +1,4 @@
+import 'package:Peeman/models/room_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -82,6 +83,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
             tenant.emergencyContact.relationship;
         _notesController.text = tenant.notes ?? '';
         _selectedPropertyId = tenant.property.id;
+        _selectedRoomId = tenant.room; // SET THIS - it's the room ID string
         _status = tenant.status;
         _isLoading = false;
       });
@@ -210,31 +212,40 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
   }
 
   Future<void> _assignTenantToRoom() async {
-    if (_selectedRoomId == null) {
+    if (_selectedRoomId == null || _selectedRoomId!.isEmpty) {
       CustomToast.show(context, 'Please select a room', isSuccess: false);
       return;
     }
 
-    // Get the AuthProvider instance
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
 
-    // Pass token as first parameter
-    await Provider.of<RoomProvider>(context, listen: false).assignTenantToRoom(
-        authProvider.token!, _selectedRoomId!, widget.tenantId);
+    try {
+      // Clear any previous error
+      // roomProvider._errorMessage = null;
 
-    if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
-        null) {
-      CustomToast.show(context, 'Tenant assigned to room successfully');
-      _fetchTenant();
-    } else {
-      CustomToast.show(context,
-          Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+      await roomProvider.assignTenantToRoom(
+          authProvider.token!, _selectedRoomId!, widget.tenantId);
+
+      // Check if operation was successful
+      if (roomProvider.state != RoomState.error &&
+          roomProvider.errorMessage == null) {
+        CustomToast.show(context, 'Tenant assigned to room successfully');
+        await _fetchTenant(); // Refresh tenant data
+      } else {
+        CustomToast.show(context,
+            roomProvider.errorMessage ?? 'Failed to assign tenant to room',
+            isSuccess: false);
+      }
+    } catch (e) {
+      CustomToast.show(context, 'Failed to assign tenant: $e',
           isSuccess: false);
     }
   }
 
   Future<void> _removeTenantFromRoom() async {
-    if (_tenant!.room == null) {
+    // Check if tenant has a room assigned
+    if (_tenant?.room == null || _tenant!.room!.isEmpty) {
       CustomToast.show(context, 'Tenant is not assigned to any room',
           isSuccess: false);
       return;
@@ -261,79 +272,32 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     );
 
     if (confirm == true) {
-      // Get the AuthProvider instance
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final roomProvider = Provider.of<RoomProvider>(context, listen: false);
 
-      // Pass token as first parameter
-      await Provider.of<RoomProvider>(context, listen: false)
-          .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
+      try {
+        // Clear any previous error
+        // roomProvider._errorMessage = null;
 
-      if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
-          null) {
-        CustomToast.show(context, 'Tenant removed from room successfully');
-        _fetchTenant();
-      } else {
-        CustomToast.show(context,
-            Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+        await roomProvider.removeTenantFromRoom(
+            authProvider.token!, _tenant!.room!);
+
+        // Check if operation was successful
+        if (roomProvider.state != RoomState.error &&
+            roomProvider.errorMessage == null) {
+          CustomToast.show(context, 'Tenant removed from room successfully');
+          await _fetchTenant(); // Refresh tenant data
+        } else {
+          CustomToast.show(context,
+              roomProvider.errorMessage ?? 'Failed to remove tenant from room',
+              isSuccess: false);
+        }
+      } catch (e) {
+        CustomToast.show(context, 'Failed to remove tenant: $e',
             isSuccess: false);
       }
     }
   }
-
-  // Future<void> _assignTenantToRoom() async {
-  //   if (_selectedRoomId == null) {
-  //     CustomToast.show(context, 'Please select a room', isSuccess: false);
-  //     return;
-  //   }
-  //   await Provider.of<RoomProvider>(context, listen: false)
-  //       .assignTenantToRoom(authProvider.token!, _selectedRoomId!, widget.tenantId);
-  //   if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
-  //     CustomToast.show(context, 'Tenant assigned to room successfully');
-  //     _fetchTenant();
-  //   } else {
-  //     CustomToast.show(
-  //         context,
-  //         Provider.of<RoomProvider>(context, listen: false).errorMessage!,
-  //         isSuccess: false);
-  //   }
-  // }
-
-  // Future<void> _removeTenantFromRoom() async {
-  //   if (_tenant!.room == null) {
-  //     CustomToast.show(context, 'Tenant is not assigned to any room', isSuccess: false);
-  //     return;
-  //   }
-  //   final confirm = await showDialog<bool>(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Remove Tenant from Room'),
-  //       content: const Text('Are you sure you want to remove this tenant from their room?'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           child: const Text('Remove', style: TextStyle(color: AppColors.red500)),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //   if (confirm == true) {
-  //     await Provider.of<RoomProvider>(context, listen: false)
-  //         .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
-  //     if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
-  //       CustomToast.show(context, 'Tenant removed from room successfully');
-  //       _fetchTenant();
-  //     } else {
-  //       CustomToast.show(
-  //           context,
-  //           Provider.of<RoomProvider>(context, listen: false).errorMessage!,
-  //           isSuccess: false);
-  //     }
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -480,26 +444,58 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                               DropdownButtonFormField<String>(
                                 value: _selectedRoomId,
                                 decoration: InputDecoration(
-                                  labelText: 'Room (Optional)',
+                                  labelText: 'Room',
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                items: roomProvider.rooms
-                                    .where((room) => room.isAvailable)
-                                    .map((room) => DropdownMenuItem(
-                                          value: room.id,
-                                          child:
-                                              Text('Room ${room.roomNumber}'),
-                                        ))
-                                    .toList(),
+                                items: () {
+                                  // Create a map to ensure unique room IDs
+                                  final Map<String, Room> uniqueRooms = {};
+                                  for (var room in roomProvider.rooms) {
+                                    if (room.isAvailable ||
+                                        room.id == _tenant?.room) {
+                                      uniqueRooms[room.id] = room;
+                                    }
+                                  }
+                                  return uniqueRooms.values
+                                      .map((room) => DropdownMenuItem(
+                                            value: room.id,
+                                            child: Text(
+                                                'Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
+                                          ))
+                                      .toList();
+                                }(),
                                 onChanged: (value) {
                                   setState(() {
                                     _selectedRoomId = value;
                                   });
                                 },
                               ),
+                              // DropdownButtonFormField<String>(
+                              //   value: _selectedRoomId,
+                              //   decoration: InputDecoration(
+                              //     labelText: 'Room (Optional)',
+                              //     border: OutlineInputBorder(
+                              //         borderRadius: BorderRadius.circular(8)),
+                              //     filled: true,
+                              //     fillColor: AppColors.grey50,
+                              //   ),
+                              //   items: roomProvider.rooms
+                              //       .where((room) => room.isAvailable)
+                              //       .map((room) => DropdownMenuItem(
+                              //             value: room.id,
+                              //             child:
+                              //                 Text('Room ${room.roomNumber}'),
+                              //           ))
+                              //       .toList(),
+                              //   onChanged: (value) {
+                              //     setState(() {
+                              //       _selectedRoomId = value;
+                              //     });
+                              //   },
+                              // ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _unitController,
@@ -735,6 +731,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                     fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 8),
+
                               DropdownButtonFormField<String>(
                                 value: _selectedPropertyId,
                                 decoration: InputDecoration(
@@ -750,19 +747,59 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                           child: Text(property.name),
                                         ))
                                     .toList(),
-                                onChanged: (value) {
+                                onChanged: (value) async {
                                   setState(() {
                                     _selectedPropertyId = value;
-                                    _selectedRoomId = null;
-                                    if (value != null) {
-                                      Provider.of<RoomProvider>(context,
-                                              listen: false)
-                                          .fetchRoomsByProperty(
-                                              authProvider.token!, value);
-                                    }
+                                    _selectedRoomId =
+                                        null; // Clear room selection when property changes
                                   });
+                                  if (value != null) {
+                                    await Provider.of<RoomProvider>(context,
+                                            listen: false)
+                                        .fetchRoomsByProperty(
+                                            authProvider.token!, value);
+
+                                    // After fetching rooms, check if tenant's current room is in this property
+                                    if (_tenant?.room != null) {
+                                      final roomExists = roomProvider.rooms.any(
+                                          (room) => room.id == _tenant!.room);
+                                      if (roomExists) {
+                                        setState(() {
+                                          _selectedRoomId = _tenant!.room;
+                                        });
+                                      }
+                                    }
+                                  }
                                 },
                               ),
+                              // DropdownButtonFormField<String>(
+                              //   value: _selectedPropertyId,
+                              //   decoration: InputDecoration(
+                              //     labelText: 'Property',
+                              //     border: OutlineInputBorder(
+                              //         borderRadius: BorderRadius.circular(8)),
+                              //     filled: true,
+                              //     fillColor: AppColors.grey50,
+                              //   ),
+                              //   items: propertyProvider.properties
+                              //       .map((property) => DropdownMenuItem(
+                              //             value: property.id,
+                              //             child: Text(property.name),
+                              //           ))
+                              //       .toList(),
+                              //   onChanged: (value) {
+                              //     setState(() {
+                              //       _selectedPropertyId = value;
+                              //       _selectedRoomId = null;
+                              //       if (value != null) {
+                              //         Provider.of<RoomProvider>(context,
+                              //                 listen: false)
+                              //             .fetchRoomsByProperty(
+                              //                 authProvider.token!, value);
+                              //       }
+                              //     });
+                              //   },
+                              // ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
                                 value: _selectedRoomId,
@@ -774,11 +811,13 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                   fillColor: AppColors.grey50,
                                 ),
                                 items: roomProvider.rooms
-                                    .where((room) => room.isAvailable)
+                                    .where((room) =>
+                                        room.isAvailable ||
+                                        room.id == _tenant?.room)
                                     .map((room) => DropdownMenuItem(
                                           value: room.id,
-                                          child:
-                                              Text('Room ${room.roomNumber}'),
+                                          child: Text(
+                                              'Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
                                         ))
                                     .toList(),
                                 onChanged: (value) {
@@ -1096,6 +1135,175 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
 
 
 
+  // Future<void> _fetchTenant() async {
+  //   try {
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //     final tenant = await Provider.of<TenantProvider>(context, listen: false)
+  //         .fetchTenantById(context, widget.tenantId);
+  //     setState(() {
+  //       _tenant = tenant;
+  //       _firstNameController.text = tenant.firstName;
+  //       _lastNameController.text = tenant.lastName;
+  //       _emailController.text = tenant.email;
+  //       _phoneController.text = tenant.phone;
+  //       _unitController.text = tenant.unit;
+  //       _rentAmountController.text = tenant.rentAmount.toString();
+  //       _securityDepositController.text = tenant.securityDeposit.toString();
+  //       _leaseStartDateController.text =
+  //           tenant.leaseStartDate.toIso8601String().split('T')[0];
+  //       _leaseEndDateController.text =
+  //           tenant.leaseEndDate.toIso8601String().split('T')[0];
+  //       _nextPaymentDueController.text =
+  //           tenant.nextPaymentDue.toIso8601String().split('T')[0];
+  //       _emergencyNameController.text = tenant.emergencyContact.name;
+  //       _emergencyPhoneController.text = tenant.emergencyContact.phone;
+  //       _emergencyRelationshipController.text =
+  //           tenant.emergencyContact.relationship;
+  //       _notesController.text = tenant.notes ?? '';
+  //       _selectedPropertyId = tenant.property.id;
+  //       _status = tenant.status;
+  //       _isLoading = false;
+  //     });
+  //     if (_selectedPropertyId != null) {
+  //       await Provider.of<RoomProvider>(context, listen: false)
+  //           .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
+  //     }
+  //   } catch (error) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //     CustomToast.show(context, 'Failed to load tenant: $error',
+  //         isSuccess: false);
+  //   }
+  // }
+
+
+
+  // Future<void> _assignTenantToRoom() async {
+  //   if (_selectedRoomId == null) {
+  //     CustomToast.show(context, 'Please select a room', isSuccess: false);
+  //     return;
+  //   }
+
+  //   // Get the AuthProvider instance
+  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+  //   // Pass token as first parameter
+  //   await Provider.of<RoomProvider>(context, listen: false).assignTenantToRoom(
+  //       authProvider.token!, _selectedRoomId!, widget.tenantId);
+
+  //   if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
+  //       null) {
+  //     CustomToast.show(context, 'Tenant assigned to room successfully');
+  //     _fetchTenant();
+  //   } else {
+  //     CustomToast.show(context,
+  //         Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //         isSuccess: false);
+  //   }
+  // }
+
+  // Future<void> _removeTenantFromRoom() async {
+  //   if (_tenant!.room == null) {
+  //     CustomToast.show(context, 'Tenant is not assigned to any room',
+  //         isSuccess: false);
+  //     return;
+  //   }
+
+  //   final confirm = await showDialog<bool>(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Remove Tenant from Room'),
+  //       content: const Text(
+  //           'Are you sure you want to remove this tenant from their room?'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, false),
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, true),
+  //           child:
+  //               const Text('Remove', style: TextStyle(color: AppColors.red500)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+
+  //   if (confirm == true) {
+  //     // Get the AuthProvider instance
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+  //     // Pass token as first parameter
+  //     await Provider.of<RoomProvider>(context, listen: false)
+  //         .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
+
+  //     if (Provider.of<RoomProvider>(context, listen: false).errorMessage ==
+  //         null) {
+  //       CustomToast.show(context, 'Tenant removed from room successfully');
+  //       _fetchTenant();
+  //     } else {
+  //       CustomToast.show(context,
+  //           Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //           isSuccess: false);
+  //     }
+  //   }
+  // }
+
+  // Future<void> _assignTenantToRoom() async {
+  //   if (_selectedRoomId == null) {
+  //     CustomToast.show(context, 'Please select a room', isSuccess: false);
+  //     return;
+  //   }
+  //   await Provider.of<RoomProvider>(context, listen: false)
+  //       .assignTenantToRoom(authProvider.token!, _selectedRoomId!, widget.tenantId);
+  //   if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+  //     CustomToast.show(context, 'Tenant assigned to room successfully');
+  //     _fetchTenant();
+  //   } else {
+  //     CustomToast.show(
+  //         context,
+  //         Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //         isSuccess: false);
+  //   }
+  // }
+
+  // Future<void> _removeTenantFromRoom() async {
+  //   if (_tenant!.room == null) {
+  //     CustomToast.show(context, 'Tenant is not assigned to any room', isSuccess: false);
+  //     return;
+  //   }
+  //   final confirm = await showDialog<bool>(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Remove Tenant from Room'),
+  //       content: const Text('Are you sure you want to remove this tenant from their room?'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, false),
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, true),
+  //           child: const Text('Remove', style: TextStyle(color: AppColors.red500)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //   if (confirm == true) {
+  //     await Provider.of<RoomProvider>(context, listen: false)
+  //         .removeTenantFromRoom(authProvider.token!, _tenant!.room!);
+  //     if (Provider.of<RoomProvider>(context, listen: false).errorMessage == null) {
+  //       CustomToast.show(context, 'Tenant removed from room successfully');
+  //       _fetchTenant();
+  //     } else {
+  //       CustomToast.show(
+  //           context,
+  //           Provider.of<RoomProvider>(context, listen: false).errorMessage!,
+  //           isSuccess: false);
+  //     }
+  //   }
+  // }
 
 
 // import 'package:flutter/material.dart';

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../models/property_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/property_provider.dart';
+// import '../../providers/property_provider.dart';
 import '../../providers/room_provider.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
@@ -19,44 +19,72 @@ class PropertyDetailScreen extends StatefulWidget {
 class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   String _activeTab = 'Details';
   bool _isLoading = false;
+  bool _roomsLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    if (_activeTab == 'Rooms') {
-      _fetchRooms();
-    }
+    // if (_activeTab == 'Rooms') {
+    //   _fetchRooms();
+    // }
   }
 
   // Future<void> _fetchRooms() async {
+  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
   //   setState(() {
   //     _isLoading = true;
   //   });
   //   await Provider.of<RoomProvider>(context, listen: false)
-  //       .fetchRoomsByProperty(context, widget.property.id);
+  //       .fetchRoomsByProperty(authProvider.token!, widget.property.id);
   //   setState(() {
   //     _isLoading = false;
   //   });
   // }
 
   Future<void> _fetchRooms() async {
+    if (_isLoading) return; // Prevent multiple simultaneous fetches
+    
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     setState(() {
       _isLoading = true;
     });
-    await Provider.of<RoomProvider>(context, listen: false)
-        .fetchRoomsByProperty(authProvider.token!, widget.property.id);
-    setState(() {
-      _isLoading = false;
-    });
+    
+    try {
+      await Provider.of<RoomProvider>(context, listen: false)
+          .fetchRoomsByProperty(authProvider.token!, widget.property.id);
+      setState(() {
+        _isLoading = false;
+        _roomsLoaded = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
+
+  // void _showAddRoomForm() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     builder: (context) => const AddRoomForm(),
+  //   );
+  // }
 
   void _showAddRoomForm() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (context) => const AddRoomForm(),
-    );
+    ).then((_) {
+      // Refresh rooms after adding a new one
+      if (_activeTab == 'Rooms') {
+        setState(() {
+          _roomsLoaded = false;
+        });
+        _fetchRooms();
+      }
+    });
   }
 
   @override
@@ -110,16 +138,45 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 
-  Widget _buildTab(String tab) {
+  // Widget _buildTab(String tab) {
+  //   final isActive = _activeTab == tab;
+  //   return GestureDetector(
+  //     onTap: () {
+  //       setState(() {
+  //         _activeTab = tab;
+  //         if (tab == 'Rooms') {
+  //           _fetchRooms();
+  //         }
+  //       });
+  //     },
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+  //       decoration: BoxDecoration(
+  //         color: isActive ? AppColors.primaryBlue : Colors.transparent,
+  //         borderRadius: BorderRadius.circular(8),
+  //       ),
+  //       child: Text(
+  //         tab,
+  //         style: TextStyle(
+  //           color: isActive ? Colors.white : AppColors.grey600,
+  //           fontWeight: FontWeight.w500,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+ Widget _buildTab(String tab) {
     final isActive = _activeTab == tab;
     return GestureDetector(
       onTap: () {
         setState(() {
           _activeTab = tab;
-          if (tab == 'Rooms') {
-            _fetchRooms();
-          }
         });
+        // Fetch rooms when switching to Rooms tab if not already loaded
+        if (tab == 'Rooms' && !_roomsLoaded && !_isLoading) {
+          _fetchRooms();
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
@@ -144,24 +201,36 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 200,
-            child: PageView.builder(
-              itemCount: widget.property.images.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(widget.property.images[index]),
-                      fit: BoxFit.cover,
+          if (widget.property.images.isNotEmpty)
+            SizedBox(
+              height: 200,
+              child: PageView.builder(
+                itemCount: widget.property.images.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(widget.property.images[index]),
+                        fit: BoxFit.cover,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+            )
+          else
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Center(
+                child: Icon(Icons.image_not_supported, size: 50),
+              ),
             ),
-          ),
           const SizedBox(height: 20),
           Text(
             widget.property.name,
@@ -211,14 +280,25 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   }
 
   Widget _buildRoomsTab(RoomProvider roomProvider) {
-    return _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : roomProvider.rooms.isEmpty
-            ? const Center(child: Text('No rooms found for this property'))
-            : Padding(
-                padding: const EdgeInsets.all(16),
-                child: RoomCard(rooms: roomProvider.rooms),
-              );
+    // Trigger fetch only once when tab is first viewed
+    if (!_roomsLoaded && !_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchRooms();
+      });
+    }
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (roomProvider.rooms.isEmpty) {
+      return const Center(child: Text('No rooms found for this property'));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: RoomCard(rooms: roomProvider.rooms),
+    );
   }
 
   Widget _infoRow(String label, String value) {
@@ -242,8 +322,144 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       ),
     );
   }
+
+
+  // Widget _buildDetailsTab() {
+  //   return SingleChildScrollView(
+  //     padding: const EdgeInsets.all(16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         SizedBox(
+  //           height: 200,
+  //           child: PageView.builder(
+  //             itemCount: widget.property.images.length,
+  //             itemBuilder: (context, index) {
+  //               return Container(
+  //                 margin: const EdgeInsets.symmetric(horizontal: 5),
+  //                 decoration: BoxDecoration(
+  //                   image: DecorationImage(
+  //                     image: NetworkImage(widget.property.images[index]),
+  //                     fit: BoxFit.cover,
+  //                   ),
+  //                   borderRadius: BorderRadius.circular(10),
+  //                 ),
+  //               );
+  //             },
+  //           ),
+  //         ),
+  //         const SizedBox(height: 20),
+  //         Text(
+  //           widget.property.name,
+  //           style: const TextStyle(
+  //             fontSize: 24,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.black,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Text(widget.property.address,
+  //             style: const TextStyle(color: Colors.black87)),
+  //         const SizedBox(height: 12),
+  //         Text(
+  //           widget.property.description,
+  //           style: const TextStyle(color: Colors.black54),
+  //         ),
+  //         const Divider(height: 30, color: Colors.black),
+  //         _infoRow('Status', widget.property.status),
+  //         _infoRow('Units Occupied',
+  //             '${widget.property.unitsOccupied}/${widget.property.totalUnits}'),
+  //         _infoRow(
+  //             'Occupancy', '${widget.property.occupancy.toStringAsFixed(1)}%'),
+  //         _infoRow('Monthly Income',
+  //             '\$${widget.property.monthlyIncome.toStringAsFixed(2)}'),
+  //         const SizedBox(height: 20),
+  //         const Text(
+  //           'Amenities',
+  //           style: TextStyle(
+  //               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+  //         ),
+  //         const SizedBox(height: 10),
+  //         Wrap(
+  //           spacing: 8,
+  //           runSpacing: 8,
+  //           children: widget.property.amenities.map((amenity) {
+  //             return Chip(
+  //               label:
+  //                   Text(amenity, style: const TextStyle(color: Colors.black)),
+  //               backgroundColor: Colors.grey[200],
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // Widget _buildRoomsTab(RoomProvider roomProvider) {
+  //   return _isLoading
+  //       ? const Center(child: CircularProgressIndicator())
+  //       : roomProvider.rooms.isEmpty
+  //           ? const Center(child: Text('No rooms found for this property'))
+  //           : Padding(
+  //               padding: const EdgeInsets.all(16),
+  //               child: RoomCard(rooms: roomProvider.rooms),
+  //             );
+  // }
+
+  // Widget _buildRoomsTab(RoomProvider roomProvider) {
+  //   // Fetch rooms if not already loaded or if list is empty
+  //   if (!_isLoading && roomProvider.rooms.isEmpty) {
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       _fetchRooms();
+  //     });
+  //   }
+
+  //   return _isLoading
+  //       ? const Center(child: CircularProgressIndicator())
+  //       : roomProvider.rooms.isEmpty
+  //           ? const Center(child: Text('No rooms found for this property'))
+  //           : Padding(
+  //               padding: const EdgeInsets.all(16),
+  //               child: RoomCard(rooms: roomProvider.rooms),
+  //             );
+  // }
+
+  // Widget _infoRow(String label, String value) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(bottom: 12),
+  //     child: Row(
+  //       children: [
+  //         Text(
+  //           '$label: ',
+  //           style: const TextStyle(
+  //               fontWeight: FontWeight.bold, color: Colors.black),
+  //         ),
+  //         Expanded(
+  //           child: Text(
+  //             value,
+  //             style: const TextStyle(color: Colors.black87),
+  //             overflow: TextOverflow.ellipsis,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
+
+
+  // Future<void> _fetchRooms() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   await Provider.of<RoomProvider>(context, listen: false)
+  //       .fetchRoomsByProperty(context, widget.property.id);
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
 
 
 // import 'package:flutter/material.dart';

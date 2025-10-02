@@ -28,13 +28,13 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
   String? _selectedPropertyId;
   String? _selectedRoomId;
   String _selectedMethod = 'bank_transfer';
-  String _selectedCurrency = 'USD';
+  String _selectedCurrency = 'GBP';
   String _selectedPaymentType = 'full';
   DateTime _selectedPaymentDate = DateTime.now();
   DateTime _selectedDueDate = DateTime.now().add(const Duration(days: 30));
 
   final List<String> _paymentMethods = ['cash', 'bank_transfer', 'credit_card', 'check'];
-  final List<String> _currencies = ['USD', 'GBP', 'NGN'];
+  final List<String> _currencies = ['GBP', 'USD', 'NGN'];
   final List<String> _paymentTypes = ['full', 'partial'];
 
   @override
@@ -163,309 +163,533 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      child: CustomCard(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Modern Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primaryBlue.withOpacity(0.1),
+                  AppColors.gradientBlue.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Record Payment',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primaryBlue, AppColors.gradientBlue],
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.add_card_rounded, color: Colors.white, size: 24),
                 ),
-                Text(
-                  'Enter payment details below',
-                  style: TextStyle(fontSize: 14, color: AppColors.grey600),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Tenant Selection
-                        const Text('Tenant *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        Consumer<TenantProvider>(
-                          builder: (context, tenantProvider, child) {
-                            return DropdownButtonFormField<String>(
-                              value: _selectedTenantId,
-                              decoration: InputDecoration(
-                                hintText: 'Select tenant',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              items: tenantProvider.tenants.map((tenant) {
-                                return DropdownMenuItem(
-                                  value: tenant.id,
-                                  child: Text('${tenant.firstName} ${tenant.lastName}'),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedTenantId = value;
-                                });
-                              },
-                              validator: (value) => value == null ? 'Please select a tenant' : null,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Property Selection
-                        const Text('Property *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        Consumer<PropertyProvider>(
-                          builder: (context, propertyProvider, child) {
-                            return DropdownButtonFormField<String>(
-                              value: _selectedPropertyId,
-                              decoration: InputDecoration(
-                                hintText: 'Select property',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              items: propertyProvider.properties.map((property) {
-                                return DropdownMenuItem(
-                                  value: property.id,
-                                  child: Text(property.name),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedPropertyId = value;
-                                  if (value != null) {
-                                    _loadRoomsForProperty(value);
-                                  }
-                                });
-                              },
-                              validator: (value) => value == null ? 'Please select a property' : null,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Room Selection
-                        const Text('Room *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        Consumer<RoomProvider>(
-                          builder: (context, roomProvider, child) {
-                            return DropdownButtonFormField<String>(
-                              value: _selectedRoomId,
-                              decoration: InputDecoration(
-                                hintText: 'Select room',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              items: roomProvider.rooms.map((room) {
-                                return DropdownMenuItem(
-                                  value: room.id,
-                                  child: Text('Room ${room.roomNumber}'),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedRoomId = value;
-                                });
-                              },
-                              validator: (value) => value == null ? 'Please select a room' : null,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Amount
-                        const Text('Amount *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _amountController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: '0.00',
-                            prefixIcon: const Icon(Icons.attach_money),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Please enter amount';
-                            if (double.tryParse(value) == null) return 'Please enter a valid amount';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Currency
-                        const Text('Currency *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: _selectedCurrency,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          items: _currencies.map((currency) {
-                            return DropdownMenuItem(value: currency, child: Text(currency));
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedCurrency = value!);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Payment Type
-                        const Text('Payment Type *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: _selectedPaymentType,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          items: _paymentTypes.map((type) {
-                            return DropdownMenuItem(
-                              value: type,
-                              child: Text(type.toUpperCase()),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedPaymentType = value!);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Payment Date
-                        const Text('Payment Date *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: () => _selectDate(context, true),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.grey200),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('${_selectedPaymentDate.day}/${_selectedPaymentDate.month}/${_selectedPaymentDate.year}'),
-                                const Icon(Icons.calendar_today),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Due Date
-                        const Text('Due Date *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: () => _selectDate(context, false),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.grey200),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('${_selectedDueDate.day}/${_selectedDueDate.month}/${_selectedDueDate.year}'),
-                                const Icon(Icons.calendar_today),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Payment Method
-                        const Text('Payment Method *', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: _selectedMethod,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          items: _paymentMethods.map((method) {
-                            return DropdownMenuItem(
-                              value: method,
-                              child: Text(method.replaceAll('_', ' ').toUpperCase()),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedMethod = value!);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Late Fee
-                        const Text('Late Fee (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _lateFeeController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: '0.00',
-                            prefixIcon: const Icon(Icons.attach_money),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Discount
-                        const Text('Discount (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _discountController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: '0.00',
-                            prefixIcon: const Icon(Icons.attach_money),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Notes
-                        const Text('Notes (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _notesController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Add any additional notes',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        Consumer<PaymentProvider>(
-                          builder: (context, paymentProvider, child) {
-                            return CustomButton(
-                              text: 'Record Payment',
-                              onPressed: paymentProvider.state == PaymentState.loading ? null : _handleSubmit,
-                              isGradient: true,
-                              isLoading: paymentProvider.state == PaymentState.loading,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Record Payment',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Enter payment details below',
+                        style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(Icons.close_rounded, color: AppColors.grey600),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.grey100,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+          
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tenant Selection
+                    _buildSectionLabel('Tenant', required: true),
+                    const SizedBox(height: 8),
+                    Consumer<TenantProvider>(
+                      builder: (context, tenantProvider, child) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.grey50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.grey200),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedTenantId,
+                            decoration: const InputDecoration(
+                              hintText: 'Select tenant',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              prefixIcon: Icon(Icons.person_rounded),
+                            ),
+                            items: tenantProvider.tenants.map((tenant) {
+                              return DropdownMenuItem(
+                                value: tenant.id,
+                                child: Text('${tenant.firstName} ${tenant.lastName}'),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedTenantId = value;
+                              });
+                            },
+                            validator: (value) => value == null ? 'Please select a tenant' : null,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Property Selection
+                    _buildSectionLabel('Property', required: true),
+                    const SizedBox(height: 8),
+                    Consumer<PropertyProvider>(
+                      builder: (context, propertyProvider, child) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.grey50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.grey200),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedPropertyId,
+                            decoration: const InputDecoration(
+                              hintText: 'Select property',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              prefixIcon: Icon(Icons.home_rounded),
+                            ),
+                            items: propertyProvider.properties.map((property) {
+                              return DropdownMenuItem(
+                                value: property.id,
+                                child: Text(property.name),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedPropertyId = value;
+                                if (value != null) {
+                                  _loadRoomsForProperty(value);
+                                }
+                              });
+                            },
+                            validator: (value) => value == null ? 'Please select a property' : null,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Room Selection
+                    _buildSectionLabel('Room', required: true),
+                    const SizedBox(height: 8),
+                    Consumer<RoomProvider>(
+                      builder: (context, roomProvider, child) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.grey50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.grey200),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedRoomId,
+                            decoration: const InputDecoration(
+                              hintText: 'Select room',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              prefixIcon: Icon(Icons.meeting_room_rounded),
+                            ),
+                            items: roomProvider.rooms.map((room) {
+                              return DropdownMenuItem(
+                                value: room.id,
+                                child: Text('Room ${room.roomNumber}'),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedRoomId = value;
+                              });
+                            },
+                            validator: (value) => value == null ? 'Please select a room' : null,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Amount and Currency Row
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Amount', required: true),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _amountController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  hintText: '0.00',
+                                  prefixIcon: const Icon(Icons.attach_money_rounded),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) return 'Required';
+                                  if (double.tryParse(value) == null) return 'Invalid amount';
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Currency', required: true),
+                              const SizedBox(height: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.grey50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.grey200),
+                                ),
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedCurrency,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  ),
+                                  items: _currencies.map((currency) {
+                                    return DropdownMenuItem(value: currency, child: Text(currency));
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() => _selectedCurrency = value!);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Payment Type and Method
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Type', required: true),
+                              const SizedBox(height: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.grey50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.grey200),
+                                ),
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedPaymentType,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  ),
+                                  items: _paymentTypes.map((type) {
+                                    return DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type.toUpperCase()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() => _selectedPaymentType = value!);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Method', required: true),
+                              const SizedBox(height: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.grey50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.grey200),
+                                ),
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedMethod,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  ),
+                                  items: _paymentMethods.map((method) {
+                                    return DropdownMenuItem(
+                                      value: method,
+                                      child: Text(method.replaceAll('_', ' ').toUpperCase()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() => _selectedMethod = value!);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Dates
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Payment Date', required: true),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () => _selectDate(context, true),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.grey50,
+                                    border: Border.all(color: AppColors.grey200),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('${_selectedPaymentDate.day}/${_selectedPaymentDate.month}/${_selectedPaymentDate.year}'),
+                                      const Icon(Icons.calendar_today_rounded, size: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Due Date', required: true),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () => _selectDate(context, false),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.grey50,
+                                    border: Border.all(color: AppColors.grey200),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('${_selectedDueDate.day}/${_selectedDueDate.month}/${_selectedDueDate.year}'),
+                                      const Icon(Icons.calendar_today_rounded, size: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Late Fee and Discount
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Late Fee'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _lateFeeController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  hintText: '0.00',
+                                  prefixIcon: const Icon(Icons.warning_rounded),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('Discount'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _discountController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  hintText: '0.00',
+                                  prefixIcon: const Icon(Icons.local_offer_rounded),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: AppColors.grey200),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Notes
+                    _buildSectionLabel('Notes'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Add any additional notes',
+                        filled: true,
+                        fillColor: AppColors.grey50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.grey200),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.grey200),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Submit Button
+                    Consumer<PaymentProvider>(
+                      builder: (context, paymentProvider, child) {
+                        return CustomButton(
+                          text: 'Record Payment',
+                          onPressed: paymentProvider.state == PaymentState.loading ? null : _handleSubmit,
+                          isGradient: true,
+                          isLoading: paymentProvider.state == PaymentState.loading,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildSectionLabel(String label, {bool required = false}) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        if (required) ...[
+          const SizedBox(width: 4),
+          Text(
+            '*',
+            style: TextStyle(
+              color: AppColors.red500,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
+
 
 
 
@@ -478,6 +702,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 // import '../../providers/payment_provider.dart';
 // import '../../providers/tenant_provider.dart';
 // import '../../providers/property_provider.dart';
+// import '../../providers/room_provider.dart';
 // import '../../widgets/custom_button.dart';
 // import '../../widgets/custom_card.dart';
 
@@ -497,22 +722,16 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
   
 //   String? _selectedTenantId;
 //   String? _selectedPropertyId;
+//   String? _selectedRoomId;
 //   String _selectedMethod = 'bank_transfer';
-//   String _selectedStatus = 'completed';
-//   DateTime _selectedDate = DateTime.now();
+//   String _selectedCurrency = 'USD';
+//   String _selectedPaymentType = 'full';
+//   DateTime _selectedPaymentDate = DateTime.now();
+//   DateTime _selectedDueDate = DateTime.now().add(const Duration(days: 30));
 
-//   final List<String> _paymentMethods = [
-//     'bank_transfer',
-//     'credit_card',
-//     'cash',
-//     'check',
-//   ];
-
-//   final List<String> _paymentStatuses = [
-//     'completed',
-//     'pending',
-//     'failed',
-//   ];
+//   final List<String> _paymentMethods = ['cash', 'bank_transfer', 'credit_card', 'check'];
+//   final List<String> _currencies = ['USD', 'GBP', 'NGN'];
+//   final List<String> _paymentTypes = ['full', 'partial'];
 
 //   @override
 //   void initState() {
@@ -529,8 +748,19 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
     
 //     if (authProvider.token != null) {
 //       tenantProvider.fetchTenants(authProvider.token!);
-//       // propertyProvider.fetchProperties(authProvider.token!);
 //       propertyProvider.fetchPropertiesWithToken(authProvider.token!);
+//     }
+//   }
+
+//   void _loadRoomsForProperty(String propertyId) {
+//     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+//     final roomProvider = Provider.of<RoomProvider>(context, listen: false);
+    
+//     if (authProvider.token != null) {
+//       roomProvider.fetchRoomsByProperty(authProvider.token!, propertyId);
+//       setState(() {
+//         _selectedRoomId = null;
+//       });
 //     }
 //   }
 
@@ -543,74 +773,87 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //     super.dispose();
 //   }
 
-//   Future<void> _selectDate() async {
+//   Future<void> _selectDate(BuildContext context, bool isPaymentDate) async {
 //     final DateTime? picked = await showDatePicker(
 //       context: context,
-//       initialDate: _selectedDate,
+//       initialDate: isPaymentDate ? _selectedPaymentDate : _selectedDueDate,
 //       firstDate: DateTime(2020),
-//       lastDate: DateTime.now().add(const Duration(days: 365)),
+//       lastDate: DateTime(2030),
 //     );
-//     if (picked != null && picked != _selectedDate) {
+//     if (picked != null) {
 //       setState(() {
-//         _selectedDate = picked;
+//         if (isPaymentDate) {
+//           _selectedPaymentDate = picked;
+//         } else {
+//           _selectedDueDate = picked;
+//         }
 //       });
 //     }
 //   }
 
-
-
-
-// void _handleSubmit() async {
-//   if (_formKey.currentState!.validate()) {
-//     if (_selectedTenantId == null || _selectedPropertyId == null) {
-//       Fluttertoast.showToast(
-//         msg: 'Please select tenant and property',
-//         backgroundColor: AppColors.red500,
-//         textColor: AppColors.white,
-//       );
-//       return;
-//     }
-
-//     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-//     final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
-
-//     try {
-//       final success = await paymentProvider.recordPayment(
-//         authProvider.token!,
-//         tenantId: _selectedTenantId!,
-//         propertyId: _selectedPropertyId!,
-//         amount: double.parse(_amountController.text),
-//         method: _selectedMethod,
-//         paymentDate: _selectedDate.toIso8601String().split('T')[0], // Send just the date
-//         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-//         lateFee: double.tryParse(_lateFeeController.text) ?? 0.0,
-//         discount: double.tryParse(_discountController.text) ?? 0.0,
-//         status: _selectedStatus,
-//       );
-
-//       if (success) {
+//   void _handleSubmit() async {
+//     if (_formKey.currentState!.validate()) {
+//       if (_selectedTenantId == null || _selectedPropertyId == null || _selectedRoomId == null) {
 //         Fluttertoast.showToast(
-//           msg: 'Payment recorded successfully',
-//           backgroundColor: AppColors.secondaryTeal,
+//           msg: 'Please select tenant, property, and room',
+//           backgroundColor: AppColors.red500,
 //           textColor: AppColors.white,
 //         );
-//         Navigator.of(context).pop();
-//       } else {
+//         return;
+//       }
+
+//       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+//       final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+
+//       try {
+//         final paymentData = {
+//           'tenant': _selectedTenantId!,
+//           'property': _selectedPropertyId!,
+//           'room': _selectedRoomId!,
+//           'amount': double.parse(_amountController.text),
+//           'currency': _selectedCurrency,
+//           'method': _selectedMethod,
+//           'paymentType': _selectedPaymentType,
+//           'paymentDate': _selectedPaymentDate.toIso8601String(),
+//           'dueDate': _selectedDueDate.toIso8601String(),
+//           'lateFee': double.tryParse(_lateFeeController.text) ?? 0.0,
+//           'discount': double.tryParse(_discountController.text) ?? 0.0,
+//         };
+
+//         if (_notesController.text.isNotEmpty) {
+//           paymentData['notes'] = _notesController.text;
+//         }
+
+//         debugPrint('📦 Submitting payment data: $paymentData');
+
+//         final success = await paymentProvider.recordPayment(
+//           authProvider.token!,
+//           paymentData,
+//         );
+
+//         if (success) {
+//           Fluttertoast.showToast(
+//             msg: 'Payment recorded successfully',
+//             backgroundColor: AppColors.secondaryTeal,
+//             textColor: AppColors.white,
+//           );
+//           Navigator.of(context).pop();
+//         } else {
+//           Fluttertoast.showToast(
+//             msg: paymentProvider.errorMessage ?? 'Failed to record payment',
+//             backgroundColor: AppColors.red500,
+//             textColor: AppColors.white,
+//           );
+//         }
+//       } catch (e) {
 //         Fluttertoast.showToast(
-//           msg: paymentProvider.errorMessage ?? 'Failed to record payment',
+//           msg: 'Error: ${e.toString()}',
 //           backgroundColor: AppColors.red500,
 //           textColor: AppColors.white,
 //         );
 //       }
-//     } catch (e) {
-//       Fluttertoast.showToast(
-//         msg: 'Error: ${e.toString()}',
-//         backgroundColor: AppColors.red500,
-//         textColor: AppColors.white,
-//       );
 //     }
 //   }
-// }
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -629,10 +872,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                   children: [
 //                     const Text(
 //                       'Record Payment',
-//                       style: TextStyle(
-//                         fontSize: 18,
-//                         fontWeight: FontWeight.w600,
-//                       ),
+//                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
 //                     ),
 //                     IconButton(
 //                       onPressed: () => Navigator.of(context).pop(),
@@ -642,10 +882,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                 ),
 //                 Text(
 //                   'Enter payment details below',
-//                   style: TextStyle(
-//                     fontSize: 14,
-//                     color: AppColors.grey600,
-//                   ),
+//                   style: TextStyle(fontSize: 14, color: AppColors.grey600),
 //                 ),
 //                 const SizedBox(height: 16),
 //                 Expanded(
@@ -654,10 +891,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                       crossAxisAlignment: CrossAxisAlignment.start,
 //                       children: [
 //                         // Tenant Selection
-//                         const Text(
-//                           'Tenant',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Tenant *', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         Consumer<TenantProvider>(
 //                           builder: (context, tenantProvider, child) {
@@ -667,7 +901,6 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                                 hintText: 'Select tenant',
 //                                 border: OutlineInputBorder(
 //                                   borderRadius: BorderRadius.circular(8),
-//                                   borderSide: BorderSide(color: AppColors.grey200),
 //                                 ),
 //                               ),
 //                               items: tenantProvider.tenants.map((tenant) {
@@ -681,22 +914,14 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                                   _selectedTenantId = value;
 //                                 });
 //                               },
-//                               validator: (value) {
-//                                 if (value == null) {
-//                                   return 'Please select a tenant';
-//                                 }
-//                                 return null;
-//                               },
+//                               validator: (value) => value == null ? 'Please select a tenant' : null,
 //                             );
 //                           },
 //                         ),
 //                         const SizedBox(height: 16),
 
 //                         // Property Selection
-//                         const Text(
-//                           'Property',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Property *', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         Consumer<PropertyProvider>(
 //                           builder: (context, propertyProvider, child) {
@@ -704,10 +929,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                               value: _selectedPropertyId,
 //                               decoration: InputDecoration(
 //                                 hintText: 'Select property',
-//                                 border: OutlineInputBorder(
-//                                   borderRadius: BorderRadius.circular(8),
-//                                   borderSide: BorderSide(color: AppColors.grey200),
-//                                 ),
+//                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                               ),
 //                               items: propertyProvider.properties.map((property) {
 //                                 return DropdownMenuItem(
@@ -718,56 +940,106 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                               onChanged: (value) {
 //                                 setState(() {
 //                                   _selectedPropertyId = value;
+//                                   if (value != null) {
+//                                     _loadRoomsForProperty(value);
+//                                   }
 //                                 });
 //                               },
-//                               validator: (value) {
-//                                 if (value == null) {
-//                                   return 'Please select a property';
-//                                 }
-//                                 return null;
+//                               validator: (value) => value == null ? 'Please select a property' : null,
+//                             );
+//                           },
+//                         ),
+//                         const SizedBox(height: 16),
+
+//                         // Room Selection
+//                         const Text('Room *', style: TextStyle(fontWeight: FontWeight.w500)),
+//                         const SizedBox(height: 8),
+//                         Consumer<RoomProvider>(
+//                           builder: (context, roomProvider, child) {
+//                             return DropdownButtonFormField<String>(
+//                               value: _selectedRoomId,
+//                               decoration: InputDecoration(
+//                                 hintText: 'Select room',
+//                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                               ),
+//                               items: roomProvider.rooms.map((room) {
+//                                 return DropdownMenuItem(
+//                                   value: room.id,
+//                                   child: Text('Room ${room.roomNumber}'),
+//                                 );
+//                               }).toList(),
+//                               onChanged: (value) {
+//                                 setState(() {
+//                                   _selectedRoomId = value;
+//                                 });
 //                               },
+//                               validator: (value) => value == null ? 'Please select a room' : null,
 //                             );
 //                           },
 //                         ),
 //                         const SizedBox(height: 16),
 
 //                         // Amount
-//                         const Text(
-//                           'Amount',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Amount *', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         TextFormField(
 //                           controller: _amountController,
 //                           keyboardType: TextInputType.number,
 //                           decoration: InputDecoration(
 //                             hintText: '0.00',
-//                             prefixIcon: const Icon(Icons.attach_money, color: AppColors.grey400),
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
+//                             prefixIcon: const Icon(Icons.attach_money),
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                           ),
 //                           validator: (value) {
-//                             if (value == null || value.isEmpty) {
-//                               return 'Please enter amount';
-//                             }
-//                             if (double.tryParse(value) == null) {
-//                               return 'Please enter a valid amount';
-//                             }
+//                             if (value == null || value.isEmpty) return 'Please enter amount';
+//                             if (double.tryParse(value) == null) return 'Please enter a valid amount';
 //                             return null;
 //                           },
 //                         ),
 //                         const SizedBox(height: 16),
 
-//                         // Payment Date
-//                         const Text(
-//                           'Payment Date',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
+//                         // Currency
+//                         const Text('Currency *', style: TextStyle(fontWeight: FontWeight.w500)),
+//                         const SizedBox(height: 8),
+//                         DropdownButtonFormField<String>(
+//                           value: _selectedCurrency,
+//                           decoration: InputDecoration(
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                           ),
+//                           items: _currencies.map((currency) {
+//                             return DropdownMenuItem(value: currency, child: Text(currency));
+//                           }).toList(),
+//                           onChanged: (value) {
+//                             setState(() => _selectedCurrency = value!);
+//                           },
 //                         ),
+//                         const SizedBox(height: 16),
+
+//                         // Payment Type
+//                         const Text('Payment Type *', style: TextStyle(fontWeight: FontWeight.w500)),
+//                         const SizedBox(height: 8),
+//                         DropdownButtonFormField<String>(
+//                           value: _selectedPaymentType,
+//                           decoration: InputDecoration(
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+//                           ),
+//                           items: _paymentTypes.map((type) {
+//                             return DropdownMenuItem(
+//                               value: type,
+//                               child: Text(type.toUpperCase()),
+//                             );
+//                           }).toList(),
+//                           onChanged: (value) {
+//                             setState(() => _selectedPaymentType = value!);
+//                           },
+//                         ),
+//                         const SizedBox(height: 16),
+
+//                         // Payment Date
+//                         const Text('Payment Date *', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         InkWell(
-//                           onTap: _selectDate,
+//                           onTap: () => _selectDate(context, true),
 //                           child: Container(
 //                             padding: const EdgeInsets.all(12),
 //                             decoration: BoxDecoration(
@@ -777,10 +1049,30 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                             child: Row(
 //                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //                               children: [
-//                                 Text(
-//                                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-//                                 ),
-//                                 const Icon(Icons.calendar_today, color: AppColors.grey400),
+//                                 Text('${_selectedPaymentDate.day}/${_selectedPaymentDate.month}/${_selectedPaymentDate.year}'),
+//                                 const Icon(Icons.calendar_today),
+//                               ],
+//                             ),
+//                           ),
+//                         ),
+//                         const SizedBox(height: 16),
+
+//                         // Due Date
+//                         const Text('Due Date *', style: TextStyle(fontWeight: FontWeight.w500)),
+//                         const SizedBox(height: 8),
+//                         InkWell(
+//                           onTap: () => _selectDate(context, false),
+//                           child: Container(
+//                             padding: const EdgeInsets.all(12),
+//                             decoration: BoxDecoration(
+//                               border: Border.all(color: AppColors.grey200),
+//                               borderRadius: BorderRadius.circular(8),
+//                             ),
+//                             child: Row(
+//                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                               children: [
+//                                 Text('${_selectedDueDate.day}/${_selectedDueDate.month}/${_selectedDueDate.year}'),
+//                                 const Icon(Icons.calendar_today),
 //                               ],
 //                             ),
 //                           ),
@@ -788,18 +1080,12 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                         const SizedBox(height: 16),
 
 //                         // Payment Method
-//                         const Text(
-//                           'Payment Method',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Payment Method *', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         DropdownButtonFormField<String>(
 //                           value: _selectedMethod,
 //                           decoration: InputDecoration(
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                           ),
 //                           items: _paymentMethods.map((method) {
 //                             return DropdownMenuItem(
@@ -808,96 +1094,48 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                             );
 //                           }).toList(),
 //                           onChanged: (value) {
-//                             setState(() {
-//                               _selectedMethod = value!;
-//                             });
-//                           },
-//                         ),
-//                         const SizedBox(height: 16),
-
-//                         // Status
-//                         const Text(
-//                           'Status',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
-//                         const SizedBox(height: 8),
-//                         DropdownButtonFormField<String>(
-//                           value: _selectedStatus,
-//                           decoration: InputDecoration(
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
-//                           ),
-//                           items: _paymentStatuses.map((status) {
-//                             return DropdownMenuItem(
-//                               value: status,
-//                               child: Text(status.toUpperCase()),
-//                             );
-//                           }).toList(),
-//                           onChanged: (value) {
-//                             setState(() {
-//                               _selectedStatus = value!;
-//                             });
+//                             setState(() => _selectedMethod = value!);
 //                           },
 //                         ),
 //                         const SizedBox(height: 16),
 
 //                         // Late Fee
-//                         const Text(
-//                           'Late Fee (Optional)',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Late Fee (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         TextFormField(
 //                           controller: _lateFeeController,
 //                           keyboardType: TextInputType.number,
 //                           decoration: InputDecoration(
 //                             hintText: '0.00',
-//                             prefixIcon: const Icon(Icons.attach_money, color: AppColors.grey400),
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
+//                             prefixIcon: const Icon(Icons.attach_money),
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                           ),
 //                         ),
 //                         const SizedBox(height: 16),
 
 //                         // Discount
-//                         const Text(
-//                           'Discount (Optional)',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Discount (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         TextFormField(
 //                           controller: _discountController,
 //                           keyboardType: TextInputType.number,
 //                           decoration: InputDecoration(
 //                             hintText: '0.00',
-//                             prefixIcon: const Icon(Icons.attach_money, color: AppColors.grey400),
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
+//                             prefixIcon: const Icon(Icons.attach_money),
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                           ),
 //                         ),
 //                         const SizedBox(height: 16),
 
 //                         // Notes
-//                         const Text(
-//                           'Notes (Optional)',
-//                           style: TextStyle(fontWeight: FontWeight.w500),
-//                         ),
+//                         const Text('Notes (Optional)', style: TextStyle(fontWeight: FontWeight.w500)),
 //                         const SizedBox(height: 8),
 //                         TextFormField(
 //                           controller: _notesController,
 //                           maxLines: 3,
 //                           decoration: InputDecoration(
 //                             hintText: 'Add any additional notes',
-//                             border: OutlineInputBorder(
-//                               borderRadius: BorderRadius.circular(8),
-//                               borderSide: BorderSide(color: AppColors.grey200),
-//                             ),
+//                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
 //                           ),
 //                         ),
 //                         const SizedBox(height: 24),
@@ -906,9 +1144,7 @@ class _RecordPaymentFormState extends State<RecordPaymentForm> {
 //                           builder: (context, paymentProvider, child) {
 //                             return CustomButton(
 //                               text: 'Record Payment',
-//                               onPressed: paymentProvider.state == PaymentState.loading 
-//                                   ? null 
-//                                   : _handleSubmit,
+//                               onPressed: paymentProvider.state == PaymentState.loading ? null : _handleSubmit,
 //                               isGradient: true,
 //                               isLoading: paymentProvider.state == PaymentState.loading,
 //                             );

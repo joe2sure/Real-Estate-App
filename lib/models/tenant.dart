@@ -1,7 +1,7 @@
 import 'package:Peeman/hive/type_ids.dart';
 import 'package:hive/hive.dart';
 
-part 'tenant.g.dart';  // This is CRITICAL - tells build_runner to generate the adapters
+part 'tenant.g.dart';  
 
 @HiveType(typeId: HiveTypeIds.property)
 class Property {

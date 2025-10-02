@@ -57,11 +57,55 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
     _fetchTenant();
   }
 
+  // Future<void> _fetchTenant() async {
+  //   try {
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //     final tenant = await Provider.of<TenantProvider>(context, listen: false)
+  //         .fetchTenantById(context, widget.tenantId);
+  //     setState(() {
+  //       _tenant = tenant;
+  //       _firstNameController.text = tenant.firstName;
+  //       _lastNameController.text = tenant.lastName;
+  //       _emailController.text = tenant.email;
+  //       _phoneController.text = tenant.phone;
+  //       _unitController.text = tenant.unit;
+  //       _rentAmountController.text = tenant.rentAmount.toString();
+  //       _securityDepositController.text = tenant.securityDeposit.toString();
+  //       _leaseStartDateController.text =
+  //           tenant.leaseStartDate.toIso8601String().split('T')[0];
+  //       _leaseEndDateController.text =
+  //           tenant.leaseEndDate.toIso8601String().split('T')[0];
+  //       _nextPaymentDueController.text =
+  //           tenant.nextPaymentDue.toIso8601String().split('T')[0];
+  //       _emergencyNameController.text = tenant.emergencyContact.name;
+  //       _emergencyPhoneController.text = tenant.emergencyContact.phone;
+  //       _emergencyRelationshipController.text =
+  //           tenant.emergencyContact.relationship;
+  //       _notesController.text = tenant.notes ?? '';
+  //       _selectedPropertyId = tenant.property.id;
+  //       _selectedRoomId = tenant.room; // SET THIS - it's the room ID string
+  //       _status = tenant.status;
+  //       _isLoading = false;
+  //     });
+  //     if (_selectedPropertyId != null) {
+  //       await Provider.of<RoomProvider>(context, listen: false)
+  //           .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
+  //     }
+  //   } catch (error) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //     CustomToast.show(context, 'Failed to load tenant: $error',
+  //         isSuccess: false);
+  //   }
+  // }
+
   Future<void> _fetchTenant() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final tenant = await Provider.of<TenantProvider>(context, listen: false)
           .fetchTenantById(context, widget.tenantId);
+
       setState(() {
         _tenant = tenant;
         _firstNameController.text = tenant.firstName;
@@ -85,12 +129,38 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
         _selectedPropertyId = tenant.property.id;
         _selectedRoomId = tenant.room; // SET THIS - it's the room ID string
         _status = tenant.status;
+      });
+
+      // Fetch rooms for the tenant's property
+      if (_selectedPropertyId != null) {
+        try {
+          await Provider.of<RoomProvider>(context, listen: false)
+              .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
+
+          // After fetching rooms, verify the selected room ID exists in the list
+          final roomProvider =
+              Provider.of<RoomProvider>(context, listen: false);
+          if (_selectedRoomId != null) {
+            final roomExists =
+                roomProvider.rooms.any((room) => room.id == _selectedRoomId);
+            if (!roomExists) {
+              // If the selected room doesn't exist in the list, clear it
+              debugPrint(
+                  'Warning: Selected room $_selectedRoomId not found in fetched rooms');
+              setState(() {
+                _selectedRoomId = null;
+              });
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching rooms for property: $e');
+          // Don't fail the entire fetch if rooms can't be loaded
+        }
+      }
+
+      setState(() {
         _isLoading = false;
       });
-      if (_selectedPropertyId != null) {
-        await Provider.of<RoomProvider>(context, listen: false)
-            .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
-      }
     } catch (error) {
       setState(() {
         _isLoading = false;
@@ -473,29 +543,6 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                   });
                                 },
                               ),
-                              // DropdownButtonFormField<String>(
-                              //   value: _selectedRoomId,
-                              //   decoration: InputDecoration(
-                              //     labelText: 'Room (Optional)',
-                              //     border: OutlineInputBorder(
-                              //         borderRadius: BorderRadius.circular(8)),
-                              //     filled: true,
-                              //     fillColor: AppColors.grey50,
-                              //   ),
-                              //   items: roomProvider.rooms
-                              //       .where((room) => room.isAvailable)
-                              //       .map((room) => DropdownMenuItem(
-                              //             value: room.id,
-                              //             child:
-                              //                 Text('Room ${room.roomNumber}'),
-                              //           ))
-                              //       .toList(),
-                              //   onChanged: (value) {
-                              //     setState(() {
-                              //       _selectedRoomId = value;
-                              //     });
-                              //   },
-                              // ),
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _unitController,
@@ -772,37 +819,22 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                   }
                                 },
                               ),
-                              // DropdownButtonFormField<String>(
-                              //   value: _selectedPropertyId,
-                              //   decoration: InputDecoration(
-                              //     labelText: 'Property',
-                              //     border: OutlineInputBorder(
-                              //         borderRadius: BorderRadius.circular(8)),
-                              //     filled: true,
-                              //     fillColor: AppColors.grey50,
-                              //   ),
-                              //   items: propertyProvider.properties
-                              //       .map((property) => DropdownMenuItem(
-                              //             value: property.id,
-                              //             child: Text(property.name),
-                              //           ))
-                              //       .toList(),
-                              //   onChanged: (value) {
-                              //     setState(() {
-                              //       _selectedPropertyId = value;
-                              //       _selectedRoomId = null;
-                              //       if (value != null) {
-                              //         Provider.of<RoomProvider>(context,
-                              //                 listen: false)
-                              //             .fetchRoomsByProperty(
-                              //                 authProvider.token!, value);
-                              //       }
-                              //     });
-                              //   },
-                              // ),
                               const SizedBox(height: 12),
+
+                              // FIXED DROPDOWN - ensures value is null if not in items list
                               DropdownButtonFormField<String>(
-                                value: _selectedRoomId,
+                                value: () {
+                                  // Only set value if it exists in the available rooms
+                                  if (_selectedRoomId != null) {
+                                    final roomExists = roomProvider.rooms.any(
+                                        (room) =>
+                                            (room.isAvailable ||
+                                                room.id == _tenant?.room) &&
+                                            room.id == _selectedRoomId);
+                                    return roomExists ? _selectedRoomId : null;
+                                  }
+                                  return null;
+                                }(),
                                 decoration: InputDecoration(
                                   labelText: 'Room',
                                   border: OutlineInputBorder(
@@ -810,22 +842,55 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> {
                                   filled: true,
                                   fillColor: AppColors.grey50,
                                 ),
-                                items: roomProvider.rooms
-                                    .where((room) =>
-                                        room.isAvailable ||
-                                        room.id == _tenant?.room)
-                                    .map((room) => DropdownMenuItem(
-                                          value: room.id,
-                                          child: Text(
-                                              'Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
-                                        ))
-                                    .toList(),
+                                items: () {
+                                  // Create a map to ensure unique room IDs
+                                  final Map<String, Room> uniqueRooms = {};
+                                  for (var room in roomProvider.rooms) {
+                                    if (room.isAvailable ||
+                                        room.id == _tenant?.room) {
+                                      uniqueRooms[room.id] = room;
+                                    }
+                                  }
+                                  return uniqueRooms.values
+                                      .map((room) => DropdownMenuItem(
+                                            value: room.id,
+                                            child: Text(
+                                                'Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
+                                          ))
+                                      .toList();
+                                }(),
                                 onChanged: (value) {
                                   setState(() {
                                     _selectedRoomId = value;
                                   });
                                 },
                               ),
+
+                              // DropdownButtonFormField<String>(
+                              //   value: _selectedRoomId,
+                              //   decoration: InputDecoration(
+                              //     labelText: 'Room',
+                              //     border: OutlineInputBorder(
+                              //         borderRadius: BorderRadius.circular(8)),
+                              //     filled: true,
+                              //     fillColor: AppColors.grey50,
+                              //   ),
+                              //   items: roomProvider.rooms
+                              //       .where((room) =>
+                              //           room.isAvailable ||
+                              //           room.id == _tenant?.room)
+                              //       .map((room) => DropdownMenuItem(
+                              //             value: room.id,
+                              //             child: Text(
+                              //                 'Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
+                              //           ))
+                              //       .toList(),
+                              //   onChanged: (value) {
+                              //     setState(() {
+                              //       _selectedRoomId = value;
+                              //     });
+                              //   },
+                              // ),
                               const SizedBox(height: 12),
                               Row(
                                 children: [

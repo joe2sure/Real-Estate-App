@@ -24,52 +24,37 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // if (_activeTab == 'Rooms') {
-    //   _fetchRooms();
-    // }
   }
-
-  // Future<void> _fetchRooms() async {
-  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   await Provider.of<RoomProvider>(context, listen: false)
-  //       .fetchRoomsByProperty(authProvider.token!, widget.property.id);
-  //   setState(() {
-  //     _isLoading = false;
-  //   });
-  // }
 
   Future<void> _fetchRooms() async {
     if (_isLoading) return; // Prevent multiple simultaneous fetches
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       await Provider.of<RoomProvider>(context, listen: false)
           .fetchRoomsByProperty(authProvider.token!, widget.property.id);
+
+      // Verify that rooms were actually loaded
+      final roomProvider = Provider.of<RoomProvider>(context, listen: false);
+      debugPrint(
+          'PropertyDetailScreen: Fetched ${roomProvider.rooms.length} rooms for property ${widget.property.id}');
+
       setState(() {
         _isLoading = false;
         _roomsLoaded = true;
       });
     } catch (e) {
+      debugPrint('PropertyDetailScreen: Error fetching rooms: $e');
       setState(() {
         _isLoading = false;
+        _roomsLoaded = false; // Mark as not loaded on error so user can retry
       });
     }
   }
-
-  // void _showAddRoomForm() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     builder: (context) => const AddRoomForm(),
-  //   );
-  // }
 
   void _showAddRoomForm() {
     showModalBottomSheet(
@@ -138,35 +123,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 
-  // Widget _buildTab(String tab) {
-  //   final isActive = _activeTab == tab;
-  //   return GestureDetector(
-  //     onTap: () {
-  //       setState(() {
-  //         _activeTab = tab;
-  //         if (tab == 'Rooms') {
-  //           _fetchRooms();
-  //         }
-  //       });
-  //     },
-  //     child: Container(
-  //       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-  //       decoration: BoxDecoration(
-  //         color: isActive ? AppColors.primaryBlue : Colors.transparent,
-  //         borderRadius: BorderRadius.circular(8),
-  //       ),
-  //       child: Text(
-  //         tab,
-  //         style: TextStyle(
-  //           color: isActive ? Colors.white : AppColors.grey600,
-  //           fontWeight: FontWeight.w500,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
- Widget _buildTab(String tab) {
+  Widget _buildTab(String tab) {
     final isActive = _activeTab == tab;
     return GestureDetector(
       onTap: () {
@@ -291,14 +248,58 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (roomProvider.rooms.isEmpty) {
-      return const Center(child: Text('No rooms found for this property'));
+    // Check if there was an error
+    if (roomProvider.state == RoomState.error) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              roomProvider.errorMessage ?? 'Failed to load rooms',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _roomsLoaded = false;
+                });
+                _fetchRooms();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: RoomCard(rooms: roomProvider.rooms),
-    );
+    if (roomProvider.rooms.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('No rooms found for this property'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _roomsLoaded = false;
+                });
+                _fetchRooms();
+              },
+              child: const Text('Refresh'),
+            ),
+          ],
+        ),
+      );
+    }
+
+
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(16),
+    child: RoomCard(rooms: roomProvider.rooms),
+  );
   }
 
   Widget _infoRow(String label, String value) {
@@ -322,7 +323,53 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       ),
     );
   }
+}
 
+
+  // Widget _buildRoomsTab(RoomProvider roomProvider) {
+  //   // Trigger fetch only once when tab is first viewed
+  //   if (!_roomsLoaded && !_isLoading) {
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       _fetchRooms();
+  //     });
+  //   }
+
+  //   if (_isLoading) {
+  //     return const Center(child: CircularProgressIndicator());
+  //   }
+
+  //   if (roomProvider.rooms.isEmpty) {
+  //     return const Center(child: Text('No rooms found for this property'));
+  //   }
+
+  //   return Padding(
+  //     padding: const EdgeInsets.all(16),
+  //     child: RoomCard(rooms: roomProvider.rooms),
+  //   );
+  // }
+
+
+  // Future<void> _fetchRooms() async {
+  //   if (_isLoading) return; // Prevent multiple simultaneous fetches
+
+  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+
+  //   try {
+  //     await Provider.of<RoomProvider>(context, listen: false)
+  //         .fetchRoomsByProperty(authProvider.token!, widget.property.id);
+  //     setState(() {
+  //       _isLoading = false;
+  //       _roomsLoaded = true;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
 
   // Widget _buildDetailsTab() {
   //   return SingleChildScrollView(
@@ -446,8 +493,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   //     ),
   //   );
   // }
-}
-
 
 
   // Future<void> _fetchRooms() async {

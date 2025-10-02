@@ -1,12 +1,14 @@
+// Renamed and updated revenue_chart_card.dart (changed $ to £, added View All screen navigation)
+import 'package:Peeman/screens/dashboard/view_all_revenue.dart'; // New
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../constants/colors.dart';
 import '../../widgets/custom_card.dart';
 
-class RevenueChart extends StatelessWidget {
+class RevenueChartCard extends StatelessWidget {
   final List<dynamic>? monthlyRevenue;
 
-  const RevenueChart({super.key, this.monthlyRevenue});
+  const RevenueChartCard({super.key, this.monthlyRevenue});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,13 @@ class RevenueChart extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ViewAllRevenueScreen(monthlyRevenue: monthlyRevenue),
+                      ),
+                    );
+                  },
                   child: Text(
                     'View All',
                     style: TextStyle(color: AppColors.primaryBlue),
@@ -74,7 +82,7 @@ class RevenueChart extends StatelessWidget {
                         reservedSize: 40,
                         getTitlesWidget: (value, meta) {
                           return Text(
-                            '\$${value.toInt()}',
+                            '£${value.toInt()}', // Changed to £
                             style: TextStyle(color: AppColors.grey600, fontSize: 12),
                           );
                         },
@@ -147,16 +155,36 @@ class RevenueChart extends StatelessWidget {
 
 
 
+
+
 // import 'package:flutter/material.dart';
 // import 'package:fl_chart/fl_chart.dart';
 // import '../../constants/colors.dart';
 // import '../../widgets/custom_card.dart';
 
 // class RevenueChart extends StatelessWidget {
-//   const RevenueChart({super.key});
+//   final List<dynamic>? monthlyRevenue;
+
+//   const RevenueChart({super.key, this.monthlyRevenue});
 
 //   @override
 //   Widget build(BuildContext context) {
+//     // Calculate maxY dynamically
+//     double maxY = 10000; // Default
+//     if (monthlyRevenue != null && monthlyRevenue!.isNotEmpty) {
+//       maxY = (monthlyRevenue!.map((e) => e['revenue'] as int).reduce((a, b) => a > b ? a : b) * 1.2).toDouble();
+//       maxY = (maxY / 5000).ceil() * 5000; // Round up to nearest 5000
+//     }
+
+//     // Map month _id to index (0-based, assuming _id starts from 1 for Jan)
+//     final spots = monthlyRevenue != null
+//         ? monthlyRevenue!.asMap().entries.map((entry) {
+//             final index = entry.key;
+//             final data = entry.value;
+//             return FlSpot(index.toDouble(), (data['revenue'] as int).toDouble());
+//           }).toList()
+//         : <FlSpot>[];
+
 //     return CustomCard(
 //       child: Padding(
 //         padding: const EdgeInsets.all(16),
@@ -215,11 +243,19 @@ class RevenueChart extends StatelessWidget {
 //                       sideTitles: SideTitles(
 //                         showTitles: true,
 //                         getTitlesWidget: (value, meta) {
-//                           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-//                           return Text(
-//                             months[value.toInt()],
-//                             style: TextStyle(color: AppColors.grey600, fontSize: 12),
-//                           );
+//                           if (monthlyRevenue == null || monthlyRevenue!.isEmpty) {
+//                             return const Text('');
+//                           }
+//                           final index = value.toInt();
+//                           if (index >= 0 && index < monthlyRevenue!.length) {
+//                             final monthId = monthlyRevenue![index]['_id'] as int;
+//                             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+//                             return Text(
+//                               months[monthId - 1], // _id starts from 1
+//                               style: TextStyle(color: AppColors.grey600, fontSize: 12),
+//                             );
+//                           }
+//                           return const Text('');
 //                         },
 //                       ),
 //                     ),
@@ -229,14 +265,7 @@ class RevenueChart extends StatelessWidget {
 //                   borderData: FlBorderData(show: false),
 //                   lineBarsData: [
 //                     LineChartBarData(
-//                       spots: const [
-//                         FlSpot(0, 18500),
-//                         FlSpot(1, 19200),
-//                         FlSpot(2, 21000),
-//                         FlSpot(3, 22400),
-//                         FlSpot(4, 24000),
-//                         FlSpot(5, 25600),
-//                       ],
+//                       spots: spots,
 //                       isCurved: true,
 //                       color: AppColors.primaryBlue,
 //                       gradient: LinearGradient(
@@ -264,7 +293,7 @@ class RevenueChart extends StatelessWidget {
 //                     ),
 //                   ],
 //                   minY: 0,
-//                   maxY: 30000,
+//                   maxY: maxY,
 //                 ),
 //               ),
 //             ),

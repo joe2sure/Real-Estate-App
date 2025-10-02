@@ -1,7 +1,10 @@
+// Updated recent_activity_card.dart (manual capitalization instead of extension)
 import 'package:Peeman/screens/dashboard/recent_activity_detail.dart'; // New detail screen
 import 'package:Peeman/screens/dashboard/view-all_recent_activity.dart';
+// import 'package:Peeman/screens/dashboard/view_all_recent_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import '../../constants/colors.dart';
 import '../../widgets/custom_card.dart';
 
@@ -29,9 +32,11 @@ class RecentActivityCard extends StatelessWidget {
   }
 
   String _getPaymentTitle(dynamic payment) {
-    final type = payment['paymentType'];
-    final method = payment['method'];
-    return '${type.capitalize()} Payment via ${method.replaceAll('_', ' ').capitalize()}';
+    final type = payment['paymentType'] as String;
+    final method = payment['method'] as String;
+    final capitalizedType = type.isNotEmpty ? '${type[0].toUpperCase()}${type.substring(1)}' : '';
+    final capitalizedMethod = method.replaceAll('_', ' ').split(' ').map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
+    return '$capitalizedType Payment via $capitalizedMethod';
   }
 
   Future<void> _showToast(BuildContext context, String message, {bool isError = false}) async {
@@ -224,13 +229,6 @@ class RecentActivityCard extends StatelessWidget {
     );
   }
 }
-
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
-  }
-}
-
 
 
 

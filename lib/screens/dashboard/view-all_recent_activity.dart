@@ -1,4 +1,4 @@
-// Updated view_all_recent_activity.dart (added onTap)
+// Updated view_all_recent_activity.dart (manual capitalization instead of extension)
 import 'package:Peeman/screens/dashboard/recent_activity_detail.dart'; // New
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
@@ -31,9 +31,11 @@ class AllRecentActivityScreen extends StatelessWidget {
   }
 
   String _getPaymentTitle(dynamic payment) {
-    final type = payment['paymentType'];
-    final method = payment['method'];
-    return '${type.capitalize()} Payment via ${method.replaceAll('_', ' ').capitalize()}';
+    final type = payment['paymentType'] as String;
+    final method = payment['method'] as String;
+    final capitalizedType = type.isNotEmpty ? '${type[0].toUpperCase()}${type.substring(1)}' : '';
+    final capitalizedMethod = method.replaceAll('_', ' ').split(' ').map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
+    return '$capitalizedType Payment via $capitalizedMethod';
   }
 
   @override
@@ -157,12 +159,6 @@ class AllRecentActivityScreen extends StatelessWidget {
     );
   }
 }
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
-  }
-}
-
 
 
 

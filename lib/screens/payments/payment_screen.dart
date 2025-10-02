@@ -449,18 +449,41 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
                           // Recent Payments List
                           Consumer<PaymentProvider>(
                             builder: (context, paymentProvider, child) {
-                              final recentPayments = paymentProvider.recentPayments.take(5).toList();
+                              // Use recent payments if available, otherwise use regular payments
+                              var availablePayments = paymentProvider.recentPayments.isNotEmpty
+                                  ? paymentProvider.recentPayments
+                                  : paymentProvider.payments;
                               
-                              if (paymentProvider.state == PaymentState.loading && recentPayments.isEmpty) {
-                                return const Center(child: CircularProgressIndicator());
+                              // Limit to 5 recent payments
+                              final recentPayments = availablePayments.take(5).toList();
+                              
+                              // Check if we're loading and have no data yet
+                              if (paymentProvider.state == PaymentState.loading && 
+                                  recentPayments.isEmpty) {
+                                return Container(
+                                  padding: const EdgeInsets.all(40),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Center(child: CircularProgressIndicator()),
+                                );
                               }
-
+                              
+                              // Show empty state if no payments at all
                               if (recentPayments.isEmpty) {
                                 return Container(
                                   padding: const EdgeInsets.all(40),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.grey200.withOpacity(0.5),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
                                   child: Column(
                                     children: [
@@ -468,7 +491,12 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
                                       const SizedBox(height: 16),
                                       Text(
                                         'No recent activity',
-                                        style: TextStyle(color: AppColors.grey600, fontSize: 16),
+                                        style: TextStyle(color: AppColors.grey600, fontSize: 16, fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Payment transactions will appear here',
+                                        style: TextStyle(color: AppColors.grey500, fontSize: 14),
                                       ),
                                     ],
                                   ),
@@ -729,7 +757,6 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
-
 
 
 

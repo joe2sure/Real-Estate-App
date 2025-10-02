@@ -135,7 +135,7 @@ class DashboardScreen extends StatelessWidget {
                             const SizedBox(height: 24),
                             const OccupancyCard(), 
                             const SizedBox(height: 24),
-                            const PaymentTrendsChart(),
+                            // const PaymentTrendsChart(),
                             const SizedBox(height: 24),
                             const DueRentCard(),
                             const SizedBox(height: 24),

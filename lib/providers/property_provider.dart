@@ -192,8 +192,8 @@ class PropertyProvider with ChangeNotifier {
         return;
       }
 
-      // Note: You'll need to implement updateProperty in PropertyService
-      // For now, this is a placeholder structure
+      
+      //  this is a placeholder structure
       final updatedProperty = await _propertyService.updateProperty(
         token: token,
         propertyId: propertyId,
@@ -238,7 +238,7 @@ class PropertyProvider with ChangeNotifier {
         return;
       }
 
-      // Note: You'll need to implement deleteProperty in PropertyService
+    
       await _propertyService.deleteProperty(token, propertyId);
       _properties.removeWhere((p) => p.id == propertyId);
       _state = PropertyState.idle;
@@ -259,7 +259,7 @@ class PropertyProvider with ChangeNotifier {
         throw Exception('No authentication token found. Please log in.');
       }
 
-      // Note: You'll need to implement getPropertyById in PropertyService
+   
       return await _propertyService.getPropertyById(token, propertyId);
     } catch (e) {
       _errorMessage = 'Failed to fetch property: $e';
@@ -327,96 +327,3 @@ class PropertyProvider with ChangeNotifier {
   // Get total monthly income - fix return type
   double get totalMonthlyIncome => _properties.fold(0.0, (double sum, property) => sum + property.monthlyIncome);
 }
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import '../models/property_model.dart';
-// import '../services/property_service.dart';
-// import '../providers/auth_provider.dart';
-
-// enum PropertyState { idle, loading, error }
-
-// class PropertyProvider with ChangeNotifier {
-//   final PropertyService _propertyService = PropertyService();
-//   List<Property> _properties = [];
-//   PropertyState _state = PropertyState.idle;
-//   String? _errorMessage;
-
-//   List<Property> get properties => _properties;
-//   PropertyState get state => _state;
-//   String? get errorMessage => _errorMessage;
-//   bool get isLoading => _state == PropertyState.loading;
-
-//   Future<void> fetchProperties() async {
-//     _state = PropertyState.loading;
-//     _errorMessage = null;
-//     notifyListeners();
-
-//     try {
-//       final token = AuthProvider().token;
-//       if (token == null) {
-//         _state = PropertyState.error;
-//         _errorMessage = 'Please log in to view properties';
-//         notifyListeners();
-//         return;
-//       }
-//       _properties = await _propertyService.fetchProperties(token);
-//       _state = PropertyState.idle;
-//       notifyListeners();
-//     } catch (e) {
-//       _state = PropertyState.error;
-//       _errorMessage = e.toString();
-//       notifyListeners();
-//     }
-//   }
-
-//   Future<void> createProperty({
-//     required String name,
-//     required String address,
-//     required String description,
-//     required int totalUnits,
-//     required int occupiedUnits,
-//     required double monthlyIncome,
-//     required String status,
-//     required List<String> amenities,
-//     List<String>? imageUrls,
-//     List<String>? imagePaths,
-//   }) async {
-//     _state = PropertyState.loading;
-//     _errorMessage = null;
-//     notifyListeners();
-
-//     try {
-//       final token = AuthProvider().token;
-//       if (token == null) {
-//         _state = PropertyState.error;
-//         _errorMessage = 'Please log in to add a property';
-//         notifyListeners();
-//         return;
-//       }
-//       final newProperty = await _propertyService.createProperty(
-//         token: token,
-//         name: name,
-//         address: address,
-//         description: description,
-//         totalUnits: totalUnits,
-//         occupiedUnits: occupiedUnits,
-//         monthlyIncome: monthlyIncome,
-//         status: status,
-//         amenities: amenities,
-//         imageUrls: imageUrls,
-//         imagePaths: imagePaths,
-//       );
-//       _properties.insert(0, newProperty); // Add new property at the top
-//       _state = PropertyState.idle;
-//       notifyListeners();
-//     } catch (e) {
-//       _state = PropertyState.error;
-//       _errorMessage = e.toString();
-//       notifyListeners();
-//     }
-//   }
-// }

@@ -60,6 +60,7 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),
       ),
+      // ✅ CRITICAL FIX: Use MaterialApp.home instead of nested Navigator
       home: const MainScreen(),
     );
   }
@@ -92,20 +93,28 @@ class MainScreen extends StatelessWidget {
         Widget content;
         bool showBottomNav = false;
 
+        // Determine which screen to show
         if (appState.onboardingStep >= 0 && appState.onboardingStep < 3) {
+          // Onboarding screens
           content = const OnboardingScreen();
+          showBottomNav = false;
         } else if (appState.onboardingStep == -1 && !authProvider.isLoggedIn) {
+          // Auth screen (login/register)
           content = const AuthScreen();
-        } else if (appState.onboardingStep == -1 && authProvider.isLoggedIn) {
+          showBottomNav = false;
+        } else if (authProvider.isLoggedIn) {
+          // ✅ FIX: User is logged in - show main app screens with bottom nav
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (appState.activeTab.isEmpty) {
               appState.setActiveTab('dashboard');
             }
           });
           content = _getScreenForTab(appState.activeTab);
-          showBottomNav = true;
+          showBottomNav = true; // ✅ CRITICAL: Enable bottom nav when logged in
         } else {
+          // Splash screen (initial state)
           content = const SplashScreen();
+          showBottomNav = false;
         }
 
         return Scaffold(
@@ -116,7 +125,6 @@ class MainScreen extends StatelessWidget {
     );
   }
 }
-
 
 
 // import 'package:Peeman/providers/room_provider.dart';

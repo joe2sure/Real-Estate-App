@@ -1,5 +1,5 @@
 import 'package:Peeman/screens/dashboard/recent_activity_detail.dart'; // New detail screen
-import 'package:Peeman/screens/dashboard/view-all_recent_activity.dart';
+import 'package:Peeman/screens/dashboard/view_all_recent_activity.dart';
 // import 'package:Peeman/screens/dashboard/view_all_recent_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -66,59 +66,68 @@ class RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Debug toast to confirm data loading
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (recentPayments == null || recentTenants == null) {
-        _showToast(context, 'No recent activity data loaded', isError: true);
-      } else {
-        _showToast(context, 'Recent activity data loaded successfully');
-      }
-    });
 
-    final activities = <Map<String, dynamic>>[];
+  final activities = <Map<String, dynamic>>[];
 
-    // Add payments
-    if (recentPayments != null) {
-      activities.addAll(recentPayments!.map((payment) {
+  // Add payments with null safety
+  if (recentPayments != null) {
+    for (var payment in recentPayments!) {
+      try {
         final tenant = payment['tenant'];
-        final amount = payment['amount'] as int;
-        return {
+        final amount = payment['amount'] as int? ?? 0;
+        
+        String tenantName = 'Unknown Tenant';
+        if (tenant != null && tenant is Map<String, dynamic>) {
+          final firstName = tenant['firstName'] ?? tenant['firstname'] ?? '';
+          final lastName = tenant['lastName'] ?? tenant['lastname'] ?? '';
+          tenantName = '$firstName $lastName'.trim();
+          if (tenantName.isEmpty) tenantName = 'Unknown Tenant';
+        }
+        
+        activities.add({
           'type': 'payment',
           'data': payment,
           'icon': Icons.attach_money,
           'iconColor': AppColors.primaryBlue,
           'bgColor': AppColors.blue100,
-          'title': _getPaymentTitle(payment), // Changed title
-          'subtitle': '£${amount.toStringAsFixed(0)} from ${tenant['firstName']} ${tenant['lastName']}', // Changed to £
-          'time': _formatRelativeTime(payment['createdAt']),
-          'createdAt': DateTime.parse(payment['createdAt']),
-        };
-      }));
+          'title': _getPaymentTitle(payment),
+          'subtitle': '£${amount.toStringAsFixed(0)} from $tenantName',
+          'time': _formatRelativeTime(payment['createdAt'] ?? DateTime.now().toIso8601String()),
+          'createdAt': DateTime.tryParse(payment['createdAt'] ?? '') ?? DateTime.now(),
+        });
+      } catch (e) {
+        debugPrint('Error processing payment: $e');
+      }
     }
+  }
 
-    // Add tenants
-    if (recentTenants != null) {
-      activities.addAll(recentTenants!.map((tenant) {
-        return {
+  // Add tenants with null safety
+  if (recentTenants != null) {
+    for (var tenant in recentTenants!) {
+      try {
+        final firstName = tenant['firstName'] ?? tenant['firstname'] ?? '';
+        final lastName = tenant['lastName'] ?? tenant['lastname'] ?? '';
+        final unit = tenant['unit'] ?? 'Unknown Unit';
+        
+        activities.add({
           'type': 'tenant',
           'data': tenant,
           'icon': Icons.person_add,
           'iconColor': AppColors.secondaryTeal,
           'bgColor': AppColors.green100,
           'title': 'New Tenant',
-          'subtitle': '${tenant['firstName']} ${tenant['lastName']} signed lease for ${tenant['unit']}',
-          'time': _formatRelativeTime(tenant['createdAt']),
-          'createdAt': DateTime.parse(tenant['createdAt']),
-        };
-      }));
+          'subtitle': '$firstName $lastName signed lease for $unit',
+          'time': _formatRelativeTime(tenant['createdAt'] ?? DateTime.now().toIso8601String()),
+          'createdAt': DateTime.tryParse(tenant['createdAt'] ?? '') ?? DateTime.now(),
+        });
+      } catch (e) {
+        debugPrint('Error processing tenant: $e');
+      }
     }
+  }
 
-    // Sort by createdAt (newest first)
-    activities.sort((a, b) {
-      final aTime = a['createdAt'] as DateTime;
-      final bTime = b['createdAt'] as DateTime;
-      return bTime.compareTo(aTime); // Newest first
-    });
+  // Sort by createdAt (newest first)
+  activities.sort((a, b) => (b['createdAt'] as DateTime).compareTo(a['createdAt'] as DateTime));
 
     return CustomCard(
       child: Padding(

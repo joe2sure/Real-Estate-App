@@ -1,4 +1,3 @@
-// Updated recent_activity_card.dart (manual capitalization instead of extension)
 import 'package:Peeman/screens/dashboard/recent_activity_detail.dart'; // New detail screen
 import 'package:Peeman/screens/dashboard/view-all_recent_activity.dart';
 // import 'package:Peeman/screens/dashboard/view_all_recent_activity.dart';

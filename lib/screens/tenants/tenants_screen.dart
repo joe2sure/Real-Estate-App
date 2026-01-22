@@ -1,10 +1,10 @@
-import 'package:Peeman/models/tenant_model.dart';
+// import 'package:Peeman/models/tenant_model.dart';
 import 'package:Peeman/screens/tenants/add_tenant_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../constants/colors.dart';
-import '../../models/tenant.dart';
+// import '../../models/tenant.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/tenant_provider.dart';
 import '../../providers/property_provider.dart';

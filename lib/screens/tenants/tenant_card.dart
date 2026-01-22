@@ -1,4 +1,4 @@
-import 'package:Peeman/models/tenant_model.dart';
+// import 'package:Peeman/models/tenant_model.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/tenant.dart';
@@ -6,7 +6,6 @@ import '../../widgets/custom_avatar.dart';
 import '../../widgets/custom_badge.dart';
 import '../../widgets/custom_card.dart';
 import 'tenant_detail_screen.dart';
-// import 'tenant_detail_screen.dart';
 
 class TenantCard extends StatelessWidget {
   final List<Tenant> tenants;

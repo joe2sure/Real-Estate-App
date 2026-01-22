@@ -26,32 +26,86 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     _loadUsers();
   }
 
+  // Future<void> _loadUsers() async {
+  //   setState(() => _isLoading = true);
+
+  //   try {
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //     final response = await http.get(
+  //       Uri.parse('${ApiEndpoints.baseUrl}/users'),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': 'Bearer ${authProvider.token}',
+  //       },
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       if (data['success']) {
+  //         setState(() {
+  //           _users = List<Map<String, dynamic>>.from(data['data']);
+  //           _isLoading = false;
+  //         });
+  //       } else {
+  //         throw Exception(data['message'] ?? 'Failed to load users');
+  //       }
+  //     } else {
+  //       throw Exception('Server error: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     setState(() => _isLoading = false);
+  //     Fluttertoast.showToast(
+  //       msg: e.toString(),
+  //       backgroundColor: AppColors.red500,
+  //       textColor: AppColors.white,
+  //     );
+  //   }
+  // }
+
+
   Future<void> _loadUsers() async {
     setState(() => _isLoading = true);
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final response = await http.get(
-        Uri.parse('${ApiEndpoints.baseUrl}/users'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authProvider.token}',
-        },
-      );
+      List<Map<String, dynamic>> allUsers = [];
+      int currentPage = 1;
+      int totalPages = 1;
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          setState(() {
-            _users = List<Map<String, dynamic>>.from(data['data']);
-            _isLoading = false;
-          });
+      // Fetch all pages
+      while (currentPage <= totalPages) {
+        final response = await http.get(
+          Uri.parse('${ApiEndpoints.baseUrl}/users?page=$currentPage&limit=10'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${authProvider.token}',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['success']) {
+            // Add users from current page
+            allUsers.addAll(List<Map<String, dynamic>>.from(data['data']));
+            
+            // Update total pages from pagination info
+            if (data['pagination'] != null) {
+              totalPages = data['pagination']['pages'] ?? 1;
+            }
+            
+            currentPage++;
+          } else {
+            throw Exception(data['message'] ?? 'Failed to load users');
+          }
         } else {
-          throw Exception(data['message'] ?? 'Failed to load users');
+          throw Exception('Server error: ${response.statusCode}');
         }
-      } else {
-        throw Exception('Server error: ${response.statusCode}');
       }
+
+      setState(() {
+        _users = allUsers;
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() => _isLoading = false);
       Fluttertoast.showToast(

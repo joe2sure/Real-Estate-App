@@ -3,7 +3,7 @@ class Assets {
   static const String onboarding1 = 'assets/images/onboarding1.png';
   static const String onboarding2 = 'assets/images/onboarding2.png';
   static const String onboarding3 = 'assets/images/onboarding3.png';
-  static const String user = 'assets/images/user.png';
+  static const String user = 'assets/images/user1.png';
   static const String property1 = 'assets/images/property1.png';
   static const String property2 = 'assets/images/property2.png';
   static const String property3 = 'assets/images/property3.png';

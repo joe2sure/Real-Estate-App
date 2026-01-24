@@ -24,9 +24,7 @@ class HiveRegistry {
       _registerAdapter(HiveTypeIds.user, UserAdapter(), 'User');
       
      
-      _registerAdapter(HiveTypeIds.property, PropertyAdapter(), 'Property');
-      _registerAdapter(HiveTypeIds.emergencyContact, EmergencyContactAdapter(), 'EmergencyContact');
-      _registerAdapter(HiveTypeIds.tenant, TenantAdapter(), 'Tenant');
+
       
     
       _registerAdapter(HiveTypeIds.payment, PaymentAdapter(), 'Payment');

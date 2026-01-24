@@ -1,4 +1,3 @@
-// import 'package:Peeman/models/tenant_model.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/tenant.dart';
@@ -69,7 +68,7 @@ class TenantCard extends StatelessWidget {
                                 ],
                               ),
                               Text(
-                                '${tenant.unit}, ${tenant.property.name}',
+                                '${tenant.unit}, ${tenant.property!.name}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: AppColors.grey500,

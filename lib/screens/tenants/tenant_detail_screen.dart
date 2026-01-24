@@ -54,81 +54,6 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> with SingleTick
   }
 
 
-    // Future<void> _fetchTenant() async {
-    //   try {
-    //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    //     final tenant = await Provider.of<TenantProvider>(context, listen: false)
-    //         .fetchTenantById(context, widget.tenantId);
-
-    //     setState(() {
-    //       _tenant = tenant;
-    //       _firstNameController.text = tenant.firstName;
-    //       _lastNameController.text = tenant.lastName;
-    //       _emailController.text = tenant.email;
-    //       _phoneController.text = tenant.phone;
-    //       _unitController.text = tenant.unit;
-    //       _rentAmountController.text = tenant.rentAmount.toString();
-    //       _securityDepositController.text = tenant.securityDeposit.toString();
-    //       _leaseStartDateController.text =
-    //           tenant.leaseStartDate.toIso8601String().split('T')[0];
-    //       _leaseEndDateController.text =
-    //           tenant.leaseEndDate.toIso8601String().split('T')[0];
-    //       _nextPaymentDueController.text =
-    //           tenant.nextPaymentDue.toIso8601String().split('T')[0];
-    //       _emergencyNameController.text = tenant.emergencyContact.name;
-    //       _emergencyPhoneController.text = tenant.emergencyContact.phone;
-    //       _emergencyRelationshipController.text =
-    //           tenant.emergencyContact.relationship;
-    //       _notesController.text = tenant.notes ?? '';
-    //       _selectedPropertyId = tenant.property.id;
-    //       _status = tenant.status;
-    //       // Don't set _selectedRoomId yet - wait for rooms to load
-    //     });
-
-    //     // Fetch rooms for the tenant's property
-    //     if (_selectedPropertyId != null && authProvider.token != null) {
-    //       try {
-    //         await Provider.of<RoomProvider>(context, listen: false)
-    //             .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
-
-    //         // NOW we can safely set the room ID after rooms are loaded
-    //         final roomProvider = Provider.of<RoomProvider>(context, listen: false);
-    //         if (tenant.room != null && tenant.room!.isNotEmpty) {
-    //           // Check if the tenant's room exists in the loaded rooms
-    //           final roomExists = roomProvider.rooms.any((room) => room.id == tenant.room);
-    //           setState(() {
-    //             _selectedRoomId = roomExists ? tenant.room : null;
-    //           });
-              
-    //           // Log warning if room doesn't exist
-    //           if (!roomExists) {
-    //             debugPrint('Warning: Tenant ${tenant.id} assigned to room ${tenant.room} which does not exist or is not available');
-    //           }
-    //         } else {
-    //           setState(() {
-    //             _selectedRoomId = null;
-    //           });
-    //         }
-    //       } catch (e) {
-    //         debugPrint('Error fetching rooms for property: $e');
-    //         // If rooms fail to load, set room ID to null to prevent dropdown error
-    //         setState(() {
-    //           _selectedRoomId = null;
-    //         });
-    //       }
-    //     }
-
-    //     setState(() {
-    //       _isLoading = false;
-    //     });
-    //   } catch (error) {
-    //     setState(() {
-    //       _isLoading = false;
-    //     });
-    //     CustomToast.show(context, 'Failed to load tenant: $error', isSuccess: false);
-    //   }
-    // }
-
   Future<void> _fetchTenant() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -155,7 +80,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> with SingleTick
         _emergencyRelationshipController.text =
             tenant.emergencyContact.relationship;
         _notesController.text = tenant.notes ?? '';
-        _selectedPropertyId = tenant.property.id;
+        _selectedPropertyId = tenant.property!.id;
         _status = tenant.status;
         // CRITICAL: Set room ID to null initially to prevent dropdown errors
         _selectedRoomId = null;
@@ -560,7 +485,7 @@ class _TenantDetailScreenState extends State<TenantDetailScreen> with SingleTick
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      _buildQuickInfo(Icons.home, _tenant!.property.name),
+                                      _buildQuickInfo(Icons.home, _tenant!.property!.name),
                                       _buildQuickInfo(Icons.apartment, _tenant!.unit),
                                     ],
                                   ),
@@ -712,7 +637,7 @@ Widget _buildDetailsTab() {
           title: 'Property Details',
           icon: Icons.business,
           children: [
-            _buildInfoRow(Icons.location_city, 'Property', _tenant!.property.name),
+            _buildInfoRow(Icons.location_city, 'Property', _tenant!.property!.name),
             const Divider(height: 24),
             _buildInfoRow(Icons.meeting_room, 'Unit', _tenant!.unit),
           ],
@@ -992,7 +917,588 @@ Widget _buildDetailsTab() {
   );
 }
 
-  // Widget _buildDetailsTab() {
+
+
+  Widget _buildEmergencyTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          _buildSectionCard(
+            title: 'Emergency Contact',
+            icon: Icons.emergency,
+            children: [
+              _buildInfoRow(Icons.person, 'Name', _tenant!.emergencyContact.name),
+              const Divider(height: 24),
+              _buildInfoRow(Icons.phone, 'Phone', _tenant!.emergencyContact.phone),
+              const Divider(height: 24),
+              _buildInfoRow(Icons.people, 'Relationship', _tenant!.emergencyContact.relationship),
+            ],
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: AppColors.primaryBlue, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.grey800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.grey500),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.grey500,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: AppColors.grey800,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditForm(PropertyProvider propertyProvider, RoomProvider roomProvider, AuthProvider authProvider) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFormSection('Personal Information', [
+              _buildTextField(_firstNameController, 'First Name', Icons.person),
+              const SizedBox(height: 12),
+              _buildTextField(_lastNameController, 'Last Name', Icons.person_outline),
+              const SizedBox(height: 12),
+              _buildTextField(_emailController, 'Email', Icons.email, keyboardType: TextInputType.emailAddress),
+              const SizedBox(height: 12),
+              _buildTextField(_phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Property & Unit', [
+              DropdownButtonFormField<String>(
+                value: _selectedPropertyId,
+                decoration: _inputDecoration('Property', Icons.business),
+                items: propertyProvider.properties
+                    .map((property) => DropdownMenuItem(value: property.id, child: Text(property.name)))
+                    .toList(),
+                onChanged: (value) async {
+                  setState(() {
+                    _selectedPropertyId = value;
+                    _selectedRoomId = null; // Clear room when property changes
+                  });
+                  if (value != null && authProvider.token != null) {
+                    await Provider.of<RoomProvider>(context, listen: false)
+                        .fetchRoomsByProperty(authProvider.token!, value);
+                    // Keep room selection cleared - let user select manually
+                    setState(() {
+                      _selectedRoomId = null;
+                    });
+                  }
+                },
+                validator: (value) => value == null ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              
+              // FIXED: Room dropdown in edit form
+              Builder(
+                builder: (context) {
+                  // Create unique rooms map
+                  final Map<String, Room> uniqueRooms = {};
+                  for (var room in roomProvider.rooms) {
+                    if (room.isAvailable || room.id == _tenant?.room) {
+                      uniqueRooms[room.id] = room;
+                    }
+                  }
+                  
+                  // Determine safe value for dropdown
+                  String? safeValue;
+                  if (_selectedRoomId != null && uniqueRooms.containsKey(_selectedRoomId)) {
+                    safeValue = _selectedRoomId;
+                  } else {
+                    safeValue = null;
+                  }
+                  
+                  return DropdownButtonFormField<String>(
+                    key: ValueKey('room_edit_dropdown_$safeValue'), // Force rebuild
+                    value: safeValue,
+                    decoration: _inputDecoration('Room', Icons.meeting_room),
+                    items: uniqueRooms.isEmpty
+                        ? [
+                            DropdownMenuItem(
+                              value: null,
+                              child: Text('No rooms available'),
+                            )
+                          ]
+                        : uniqueRooms.values
+                            .map((room) => DropdownMenuItem(
+                                  value: room.id,
+                                  child: Text('Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
+                                ))
+                            .toList(),
+                    onChanged: uniqueRooms.isEmpty
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _selectedRoomId = value;
+                            });
+                          },
+                  );
+                }
+              ),
+              const SizedBox(height: 12),
+              _buildTextField(_unitController, 'Unit Number', Icons.apartment),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Financial', [
+              _buildTextField(_rentAmountController, 'Rent Amount', Icons.attach_money, keyboardType: TextInputType.number),
+              const SizedBox(height: 12),
+              _buildTextField(_securityDepositController, 'Security Deposit', Icons.account_balance_wallet, keyboardType: TextInputType.number),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Lease Dates', [
+              _buildDateField(_leaseStartDateController, 'Lease Start Date', Icons.event_available),
+              const SizedBox(height: 12),
+              _buildDateField(_leaseEndDateController, 'Lease End Date', Icons.event_busy),
+              const SizedBox(height: 12),
+              _buildDateField(_nextPaymentDueController, 'Next Payment Due', Icons.calendar_today),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Status', [
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: _inputDecoration('Payment Status', Icons.payment),
+                items: ['paid', 'overdue', 'pending']
+                    .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _status = value!;
+                  });
+                },
+              ),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Emergency Contact', [
+              _buildTextField(_emergencyNameController, 'Name', Icons.person),
+              const SizedBox(height: 12),
+              _buildTextField(_emergencyPhoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
+              const SizedBox(height: 12),
+              _buildTextField(_emergencyRelationshipController, 'Relationship', Icons.people),
+            ]),
+            
+            const SizedBox(height: 20),
+            
+            _buildFormSection('Notes', [
+              TextFormField(
+                controller: _notesController,
+                decoration: _inputDecoration('Notes (Optional)', Icons.note),
+                maxLines: 4,
+              ),
+            ]),
+            
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildFormSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.grey800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType? keyboardType,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: _inputDecoration(label, icon),
+      keyboardType: keyboardType,
+      validator: (value) => value!.isEmpty ? 'Required' : null,
+    );
+  }
+
+Widget _buildDateField(
+  TextEditingController controller,
+  String label,
+  IconData icon,
+) {
+  return TextFormField(
+    controller: controller,
+    decoration: _inputDecoration(label, icon),
+    readOnly: true,
+    onTap: () => _selectDate(context, controller),
+    validator: (value) => value!.isEmpty ? 'Required' : null,
+  );
+}
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: AppColors.primaryBlue),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.grey200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+      ),
+      filled: true,
+      fillColor: AppColors.grey50,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _unitController.dispose();
+    _rentAmountController.dispose();
+    _securityDepositController.dispose();
+    _leaseStartDateController.dispose();
+    _leaseEndDateController.dispose();
+    _nextPaymentDueController.dispose();
+    _emergencyNameController.dispose();
+    _emergencyPhoneController.dispose();
+    _emergencyRelationshipController.dispose();
+    _notesController.dispose();
+    _reminderController.dispose();
+    super.dispose();
+  }
+}
+
+
+
+
+    // Future<void> _fetchTenant() async {
+    //   try {
+    //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    //     final tenant = await Provider.of<TenantProvider>(context, listen: false)
+    //         .fetchTenantById(context, widget.tenantId);
+
+    //     setState(() {
+    //       _tenant = tenant;
+    //       _firstNameController.text = tenant.firstName;
+    //       _lastNameController.text = tenant.lastName;
+    //       _emailController.text = tenant.email;
+    //       _phoneController.text = tenant.phone;
+    //       _unitController.text = tenant.unit;
+    //       _rentAmountController.text = tenant.rentAmount.toString();
+    //       _securityDepositController.text = tenant.securityDeposit.toString();
+    //       _leaseStartDateController.text =
+    //           tenant.leaseStartDate.toIso8601String().split('T')[0];
+    //       _leaseEndDateController.text =
+    //           tenant.leaseEndDate.toIso8601String().split('T')[0];
+    //       _nextPaymentDueController.text =
+    //           tenant.nextPaymentDue.toIso8601String().split('T')[0];
+    //       _emergencyNameController.text = tenant.emergencyContact.name;
+    //       _emergencyPhoneController.text = tenant.emergencyContact.phone;
+    //       _emergencyRelationshipController.text =
+    //           tenant.emergencyContact.relationship;
+    //       _notesController.text = tenant.notes ?? '';
+    //       _selectedPropertyId = tenant.property.id;
+    //       _status = tenant.status;
+    //       // Don't set _selectedRoomId yet - wait for rooms to load
+    //     });
+
+    //     // Fetch rooms for the tenant's property
+    //     if (_selectedPropertyId != null && authProvider.token != null) {
+    //       try {
+    //         await Provider.of<RoomProvider>(context, listen: false)
+    //             .fetchRoomsByProperty(authProvider.token!, _selectedPropertyId!);
+
+    //         // NOW we can safely set the room ID after rooms are loaded
+    //         final roomProvider = Provider.of<RoomProvider>(context, listen: false);
+    //         if (tenant.room != null && tenant.room!.isNotEmpty) {
+    //           // Check if the tenant's room exists in the loaded rooms
+    //           final roomExists = roomProvider.rooms.any((room) => room.id == tenant.room);
+    //           setState(() {
+    //             _selectedRoomId = roomExists ? tenant.room : null;
+    //           });
+              
+    //           // Log warning if room doesn't exist
+    //           if (!roomExists) {
+    //             debugPrint('Warning: Tenant ${tenant.id} assigned to room ${tenant.room} which does not exist or is not available');
+    //           }
+    //         } else {
+    //           setState(() {
+    //             _selectedRoomId = null;
+    //           });
+    //         }
+    //       } catch (e) {
+    //         debugPrint('Error fetching rooms for property: $e');
+    //         // If rooms fail to load, set room ID to null to prevent dropdown error
+    //         setState(() {
+    //           _selectedRoomId = null;
+    //         });
+    //       }
+    //     }
+
+    //     setState(() {
+    //       _isLoading = false;
+    //     });
+    //   } catch (error) {
+    //     setState(() {
+    //       _isLoading = false;
+    //     });
+    //     CustomToast.show(context, 'Failed to load tenant: $error', isSuccess: false);
+    //   }
+    // }
+
+
+
+      // Widget _buildEditForm(PropertyProvider propertyProvider, RoomProvider roomProvider, AuthProvider authProvider) {
+  //   return SingleChildScrollView(
+  //     padding: const EdgeInsets.all(20),
+  //     child: Form(
+  //       key: _formKey,
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           _buildFormSection('Personal Information', [
+  //             _buildTextField(_firstNameController, 'First Name', Icons.person),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_lastNameController, 'Last Name', Icons.person_outline),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_emailController, 'Email', Icons.email, keyboardType: TextInputType.emailAddress),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Property & Unit', [
+  //             DropdownButtonFormField<String>(
+  //               value: _selectedPropertyId,
+  //               decoration: _inputDecoration('Property', Icons.business),
+  //               items: propertyProvider.properties
+  //                   .map((property) => DropdownMenuItem(value: property.id, child: Text(property.name)))
+  //                   .toList(),
+  //               onChanged: (value) {
+  //                 setState(() {
+  //                   _selectedPropertyId = value;
+  //                   _selectedRoomId = null;
+  //                   if (value != null) {
+  //                     Provider.of<RoomProvider>(context, listen: false)
+  //                         .fetchRoomsByProperty(authProvider.token!, value);
+  //                   }
+  //                 });
+  //               },
+  //               validator: (value) => value == null ? 'Required' : null,
+  //             ),
+  //             const SizedBox(height: 12),
+
+  //             DropdownButtonFormField<String>(
+  //               value: () {
+  //                 // Only set value if rooms are loaded and the selected room exists in the list
+  //                 if (_selectedRoomId == null || roomProvider.rooms.isEmpty) {
+  //                   return null;
+  //                 }
+                  
+  //                 // Create unique room map to prevent duplicates
+  //                 final Map<String, Room> uniqueRooms = {};
+  //                 for (var room in roomProvider.rooms) {
+  //                   if (room.isAvailable || room.id == _tenant?.room) {
+  //                     uniqueRooms[room.id] = room;
+  //                   }
+  //                 }
+                  
+  //                 // Check if selected room exists in unique rooms
+  //                 final roomExists = uniqueRooms.containsKey(_selectedRoomId);
+  //                 return roomExists ? _selectedRoomId : null;
+  //               }(),
+  //               decoration: _inputDecoration('Room', Icons.meeting_room),
+  //               items: () {
+  //                 // Create unique room map to prevent duplicate values
+  //                 final Map<String, Room> uniqueRooms = {};
+  //                 for (var room in roomProvider.rooms) {
+  //                   if (room.isAvailable || room.id == _tenant?.room) {
+  //                     uniqueRooms[room.id] = room;
+  //                   }
+  //                 }
+                  
+  //                 // Convert to dropdown items
+  //                 return uniqueRooms.values
+  //                     .map((room) => DropdownMenuItem(
+  //                           value: room.id,
+  //                           child: Text('Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
+  //                         ))
+  //                     .toList();
+  //               }(),
+  //               onChanged: (value) {
+  //                 setState(() {
+  //                   _selectedRoomId = value;
+  //                 });
+  //               },
+  //             ),
+
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_unitController, 'Unit Number', Icons.apartment),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Financial', [
+  //             _buildTextField(_rentAmountController, 'Rent Amount', Icons.attach_money, keyboardType: TextInputType.number),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_securityDepositController, 'Security Deposit', Icons.account_balance_wallet, keyboardType: TextInputType.number),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Lease Dates', [
+  //             _buildDateField(_leaseStartDateController, 'Lease Start Date', Icons.event_available),
+  //             const SizedBox(height: 12),
+  //             _buildDateField(_leaseEndDateController, 'Lease End Date', Icons.event_busy),
+  //             const SizedBox(height: 12),
+  //             _buildDateField(_nextPaymentDueController, 'Next Payment Due', Icons.calendar_today),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Status', [
+  //             DropdownButtonFormField<String>(
+  //               value: _status,
+  //               decoration: _inputDecoration('Payment Status', Icons.payment),
+  //               items: ['paid', 'overdue', 'pending']
+  //                   .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+  //                   .toList(),
+  //               onChanged: (value) {
+  //                 setState(() {
+  //                   _status = value!;
+  //                 });
+  //               },
+  //             ),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Emergency Contact', [
+  //             _buildTextField(_emergencyNameController, 'Name', Icons.person),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_emergencyPhoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
+  //             const SizedBox(height: 12),
+  //             _buildTextField(_emergencyRelationshipController, 'Relationship', Icons.people),
+  //           ]),
+            
+  //           const SizedBox(height: 20),
+            
+  //           _buildFormSection('Notes', [
+  //             TextFormField(
+  //               controller: _notesController,
+  //               decoration: _inputDecoration('Notes (Optional)', Icons.note),
+  //               maxLines: 4,
+  //             ),
+  //           ]),
+            
+  //           const SizedBox(height: 100),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+    // Widget _buildDetailsTab() {
   //   final authProvider = Provider.of<AuthProvider>(context);
   //   final propertyProvider = Provider.of<PropertyProvider>(context);
   //   final roomProvider = Provider.of<RoomProvider>(context);
@@ -1572,501 +2078,3 @@ Widget _buildDetailsTab() {
   //     ),
   //   );
   // }
-
-  Widget _buildEmergencyTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          _buildSectionCard(
-            title: 'Emergency Contact',
-            icon: Icons.emergency,
-            children: [
-              _buildInfoRow(Icons.person, 'Name', _tenant!.emergencyContact.name),
-              const Divider(height: 24),
-              _buildInfoRow(Icons.phone, 'Phone', _tenant!.emergencyContact.phone),
-              const Divider(height: 24),
-              _buildInfoRow(Icons.people, 'Relationship', _tenant!.emergencyContact.relationship),
-            ],
-          ),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: AppColors.primaryBlue, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.grey800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppColors.grey500),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.grey500,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: AppColors.grey800,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEditForm(PropertyProvider propertyProvider, RoomProvider roomProvider, AuthProvider authProvider) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFormSection('Personal Information', [
-              _buildTextField(_firstNameController, 'First Name', Icons.person),
-              const SizedBox(height: 12),
-              _buildTextField(_lastNameController, 'Last Name', Icons.person_outline),
-              const SizedBox(height: 12),
-              _buildTextField(_emailController, 'Email', Icons.email, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 12),
-              _buildTextField(_phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Property & Unit', [
-              DropdownButtonFormField<String>(
-                value: _selectedPropertyId,
-                decoration: _inputDecoration('Property', Icons.business),
-                items: propertyProvider.properties
-                    .map((property) => DropdownMenuItem(value: property.id, child: Text(property.name)))
-                    .toList(),
-                onChanged: (value) async {
-                  setState(() {
-                    _selectedPropertyId = value;
-                    _selectedRoomId = null; // Clear room when property changes
-                  });
-                  if (value != null && authProvider.token != null) {
-                    await Provider.of<RoomProvider>(context, listen: false)
-                        .fetchRoomsByProperty(authProvider.token!, value);
-                    // Keep room selection cleared - let user select manually
-                    setState(() {
-                      _selectedRoomId = null;
-                    });
-                  }
-                },
-                validator: (value) => value == null ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              
-              // FIXED: Room dropdown in edit form
-              Builder(
-                builder: (context) {
-                  // Create unique rooms map
-                  final Map<String, Room> uniqueRooms = {};
-                  for (var room in roomProvider.rooms) {
-                    if (room.isAvailable || room.id == _tenant?.room) {
-                      uniqueRooms[room.id] = room;
-                    }
-                  }
-                  
-                  // Determine safe value for dropdown
-                  String? safeValue;
-                  if (_selectedRoomId != null && uniqueRooms.containsKey(_selectedRoomId)) {
-                    safeValue = _selectedRoomId;
-                  } else {
-                    safeValue = null;
-                  }
-                  
-                  return DropdownButtonFormField<String>(
-                    key: ValueKey('room_edit_dropdown_$safeValue'), // Force rebuild
-                    value: safeValue,
-                    decoration: _inputDecoration('Room', Icons.meeting_room),
-                    items: uniqueRooms.isEmpty
-                        ? [
-                            DropdownMenuItem(
-                              value: null,
-                              child: Text('No rooms available'),
-                            )
-                          ]
-                        : uniqueRooms.values
-                            .map((room) => DropdownMenuItem(
-                                  value: room.id,
-                                  child: Text('Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
-                                ))
-                            .toList(),
-                    onChanged: uniqueRooms.isEmpty
-                        ? null
-                        : (value) {
-                            setState(() {
-                              _selectedRoomId = value;
-                            });
-                          },
-                  );
-                }
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(_unitController, 'Unit Number', Icons.apartment),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Financial', [
-              _buildTextField(_rentAmountController, 'Rent Amount', Icons.attach_money, keyboardType: TextInputType.number),
-              const SizedBox(height: 12),
-              _buildTextField(_securityDepositController, 'Security Deposit', Icons.account_balance_wallet, keyboardType: TextInputType.number),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Lease Dates', [
-              _buildDateField(_leaseStartDateController, 'Lease Start Date', Icons.event_available),
-              const SizedBox(height: 12),
-              _buildDateField(_leaseEndDateController, 'Lease End Date', Icons.event_busy),
-              const SizedBox(height: 12),
-              _buildDateField(_nextPaymentDueController, 'Next Payment Due', Icons.calendar_today),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Status', [
-              DropdownButtonFormField<String>(
-                value: _status,
-                decoration: _inputDecoration('Payment Status', Icons.payment),
-                items: ['paid', 'overdue', 'pending']
-                    .map((status) => DropdownMenuItem(value: status, child: Text(status)))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _status = value!;
-                  });
-                },
-              ),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Emergency Contact', [
-              _buildTextField(_emergencyNameController, 'Name', Icons.person),
-              const SizedBox(height: 12),
-              _buildTextField(_emergencyPhoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
-              const SizedBox(height: 12),
-              _buildTextField(_emergencyRelationshipController, 'Relationship', Icons.people),
-            ]),
-            
-            const SizedBox(height: 20),
-            
-            _buildFormSection('Notes', [
-              TextFormField(
-                controller: _notesController,
-                decoration: _inputDecoration('Notes (Optional)', Icons.note),
-                maxLines: 4,
-              ),
-            ]),
-            
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget _buildEditForm(PropertyProvider propertyProvider, RoomProvider roomProvider, AuthProvider authProvider) {
-  //   return SingleChildScrollView(
-  //     padding: const EdgeInsets.all(20),
-  //     child: Form(
-  //       key: _formKey,
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           _buildFormSection('Personal Information', [
-  //             _buildTextField(_firstNameController, 'First Name', Icons.person),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_lastNameController, 'Last Name', Icons.person_outline),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_emailController, 'Email', Icons.email, keyboardType: TextInputType.emailAddress),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Property & Unit', [
-  //             DropdownButtonFormField<String>(
-  //               value: _selectedPropertyId,
-  //               decoration: _inputDecoration('Property', Icons.business),
-  //               items: propertyProvider.properties
-  //                   .map((property) => DropdownMenuItem(value: property.id, child: Text(property.name)))
-  //                   .toList(),
-  //               onChanged: (value) {
-  //                 setState(() {
-  //                   _selectedPropertyId = value;
-  //                   _selectedRoomId = null;
-  //                   if (value != null) {
-  //                     Provider.of<RoomProvider>(context, listen: false)
-  //                         .fetchRoomsByProperty(authProvider.token!, value);
-  //                   }
-  //                 });
-  //               },
-  //               validator: (value) => value == null ? 'Required' : null,
-  //             ),
-  //             const SizedBox(height: 12),
-
-  //             DropdownButtonFormField<String>(
-  //               value: () {
-  //                 // Only set value if rooms are loaded and the selected room exists in the list
-  //                 if (_selectedRoomId == null || roomProvider.rooms.isEmpty) {
-  //                   return null;
-  //                 }
-                  
-  //                 // Create unique room map to prevent duplicates
-  //                 final Map<String, Room> uniqueRooms = {};
-  //                 for (var room in roomProvider.rooms) {
-  //                   if (room.isAvailable || room.id == _tenant?.room) {
-  //                     uniqueRooms[room.id] = room;
-  //                   }
-  //                 }
-                  
-  //                 // Check if selected room exists in unique rooms
-  //                 final roomExists = uniqueRooms.containsKey(_selectedRoomId);
-  //                 return roomExists ? _selectedRoomId : null;
-  //               }(),
-  //               decoration: _inputDecoration('Room', Icons.meeting_room),
-  //               items: () {
-  //                 // Create unique room map to prevent duplicate values
-  //                 final Map<String, Room> uniqueRooms = {};
-  //                 for (var room in roomProvider.rooms) {
-  //                   if (room.isAvailable || room.id == _tenant?.room) {
-  //                     uniqueRooms[room.id] = room;
-  //                   }
-  //                 }
-                  
-  //                 // Convert to dropdown items
-  //                 return uniqueRooms.values
-  //                     .map((room) => DropdownMenuItem(
-  //                           value: room.id,
-  //                           child: Text('Room ${room.roomNumber}${room.id == _tenant?.room ? ' (Current)' : ''}'),
-  //                         ))
-  //                     .toList();
-  //               }(),
-  //               onChanged: (value) {
-  //                 setState(() {
-  //                   _selectedRoomId = value;
-  //                 });
-  //               },
-  //             ),
-
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_unitController, 'Unit Number', Icons.apartment),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Financial', [
-  //             _buildTextField(_rentAmountController, 'Rent Amount', Icons.attach_money, keyboardType: TextInputType.number),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_securityDepositController, 'Security Deposit', Icons.account_balance_wallet, keyboardType: TextInputType.number),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Lease Dates', [
-  //             _buildDateField(_leaseStartDateController, 'Lease Start Date', Icons.event_available),
-  //             const SizedBox(height: 12),
-  //             _buildDateField(_leaseEndDateController, 'Lease End Date', Icons.event_busy),
-  //             const SizedBox(height: 12),
-  //             _buildDateField(_nextPaymentDueController, 'Next Payment Due', Icons.calendar_today),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Status', [
-  //             DropdownButtonFormField<String>(
-  //               value: _status,
-  //               decoration: _inputDecoration('Payment Status', Icons.payment),
-  //               items: ['paid', 'overdue', 'pending']
-  //                   .map((status) => DropdownMenuItem(value: status, child: Text(status)))
-  //                   .toList(),
-  //               onChanged: (value) {
-  //                 setState(() {
-  //                   _status = value!;
-  //                 });
-  //               },
-  //             ),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Emergency Contact', [
-  //             _buildTextField(_emergencyNameController, 'Name', Icons.person),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_emergencyPhoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
-  //             const SizedBox(height: 12),
-  //             _buildTextField(_emergencyRelationshipController, 'Relationship', Icons.people),
-  //           ]),
-            
-  //           const SizedBox(height: 20),
-            
-  //           _buildFormSection('Notes', [
-  //             TextFormField(
-  //               controller: _notesController,
-  //               decoration: _inputDecoration('Notes (Optional)', Icons.note),
-  //               maxLines: 4,
-  //             ),
-  //           ]),
-            
-  //           const SizedBox(height: 100),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  Widget _buildFormSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.grey800,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...children,
-      ],
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon, {
-    TextInputType? keyboardType,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: _inputDecoration(label, icon),
-      keyboardType: keyboardType,
-      validator: (value) => value!.isEmpty ? 'Required' : null,
-    );
-  }
-
-Widget _buildDateField(
-  TextEditingController controller,
-  String label,
-  IconData icon,
-) {
-  return TextFormField(
-    controller: controller,
-    decoration: _inputDecoration(label, icon),
-    readOnly: true,
-    onTap: () => _selectDate(context, controller),
-    validator: (value) => value!.isEmpty ? 'Required' : null,
-  );
-}
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: AppColors.primaryBlue),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.grey200),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
-      ),
-      filled: true,
-      fillColor: AppColors.grey50,
-    );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _unitController.dispose();
-    _rentAmountController.dispose();
-    _securityDepositController.dispose();
-    _leaseStartDateController.dispose();
-    _leaseEndDateController.dispose();
-    _nextPaymentDueController.dispose();
-    _emergencyNameController.dispose();
-    _emergencyPhoneController.dispose();
-    _emergencyRelationshipController.dispose();
-    _notesController.dispose();
-    _reminderController.dispose();
-    super.dispose();
-  }
-}
